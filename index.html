@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ירח דבש באינדונזיה 2026 – גיא ועדי</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff9a9e">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">ירח דבש 🌴</div>
+            <!-- One <li> per country (href pages/<id>.html) + the fixed tabs. -->
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="active">בית</a></li>
+                <li><a href="pages/uluwatu.html">אולוואטו</a></li>
+                <li><a href="pages/rajaampat.html">ראג׳ה אמפט</a></li>
+                <li><a href="pages/sideman.html">סידמן</a></li>
+                <li><a href="pages/gili.html">גילי אייר</a></li>
+                <li><a href="pages/nusa.html">נוסה</a></li>
+                <li><a href="pages/munduk.html">מונדוק</a></li>
+                <li><a href="pages/ubud.html">אובוד</a></li>
+                <li><a href="tips.html">טיפים</a></li>
+                <li><a href="todo.html">משימות</a></li>
+                <li><a href="pages/packing.html">אריזה</a></li>
+                <li><a href="pages/budget.html">תקציב</a></li>
+            </ul>
+            <button class="hamburger" id="hamburger" aria-label="תפריט">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">ירח דבש באינדונזיה 💛</h1>
+            <p class="hero-dates">19 ביולי – 14 באוגוסט 2026 · 27 ימים</p>
+            <p class="hero-subtitle">גיא &amp; עדי · אולוואטו · ראג׳ה אמפט · סידמן · גילי · נוסה · מונדוק · אובוד</p>
+            <div id="countdown" class="cd-wrap"></div>
+        </div>
+    </section>
+
+    <main class="container">
+        <section class="overview">
+            <h2>27 ימים · 7 יעדים</h2>
+            <div class="country-cards" id="countryCards"></div>
+        </section>
+
+        <!-- Trip Map -->
+        <section class="map-section">
+            <h2>🗺️ מסלול הטיול</h2>
+            <div id="tripMap"></div>
+        </section>
+
+        <!-- Weather — one .wx-card per destination; id="wx-<city id from weather.js>" -->
+        <section class="weather-section">
+            <h2>🌤️ מזג אוויר נוכחי ביעדים</h2>
+            <div class="wx-grid">
+                <div class="wx-card">
+                    <div class="wx-flag">🏄</div>
+                    <div class="wx-name">אולוואטו</div>
+                    <div id="wx-uluwatu"><div class="wx-note">יולי–אוג׳: יבש ~29°C</div></div>
+                </div>
+                <div class="wx-card">
+                    <div class="wx-flag">🐠</div>
+                    <div class="wx-name">ראג׳ה אמפט</div>
+                    <div id="wx-rajaampat"><div class="wx-note">חם ולח ~31°C</div></div>
+                </div>
+                <div class="wx-card">
+                    <div class="wx-flag">🌾</div>
+                    <div class="wx-name">סידמן</div>
+                    <div id="wx-sideman"><div class="wx-note">הררי ונעים ~27°C</div></div>
+                </div>
+                <div class="wx-card">
+                    <div class="wx-flag">🐢</div>
+                    <div class="wx-name">גילי אייר</div>
+                    <div id="wx-gili"><div class="wx-note">יבש וחמים ~29°C</div></div>
+                </div>
+                <div class="wx-card">
+                    <div class="wx-flag">🤿</div>
+                    <div class="wx-name">נוסה</div>
+                    <div id="wx-nusa"><div class="wx-note">יבש ~29°C</div></div>
+                </div>
+                <div class="wx-card">
+                    <div class="wx-flag">⛰️</div>
+                    <div class="wx-name">מונדוק</div>
+                    <div id="wx-munduk"><div class="wx-note">הרים קרירים ~23°C</div></div>
+                </div>
+                <div class="wx-card">
+                    <div class="wx-flag">🌴</div>
+                    <div class="wx-name">אובוד</div>
+                    <div id="wx-ubud"><div class="wx-note">לח וירוק ~28°C</div></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Playlist -->
+        <section class="playlist-section">
+            <h2>🎵 פלייליסט הטיול</h2>
+            <div id="playlistArea"></div>
+        </section>
+
+        <!-- Currency Converter — one .fx-result per currency; id="fx<CODE from currency.js>" -->
+        <section class="currency-section">
+            <h2>🪙 המרת מטבע (₪)</h2>
+            <div class="fx-input-row">
+                <label for="fxAmount">סכום בשקלים:</label>
+                <input type="number" id="fxAmount" placeholder="100" min="0" value="100">
+                <span class="fx-status" id="fxStatus">טוען שערים...</span>
+            </div>
+            <div class="fx-grid">
+                <div class="fx-result">
+                    <div class="fx-result__flag">🇮🇩</div>
+                    <div class="fx-result__country">רופיה – IDR</div>
+                    <div class="fx-result__value" id="fxIDR">—</div>
+                </div>
+                <div class="fx-result">
+                    <div class="fx-result__flag">🇺🇸</div>
+                    <div class="fx-result__country">דולר – USD</div>
+                    <div class="fx-result__value" id="fxUSD">—</div>
+                </div>
+            </div>
+            <p class="fx-ref" id="fxRef" style="text-align:center;margin-top:0.75rem;color:var(--text-muted);font-weight:600;"></p>
+        </section>
+
+        <!-- Emergency Info (collapsible). Replace numbers per country + your embassy. -->
+        <section class="emergency-section">
+            <div class="emergency-header" id="emergencyToggle">
+                <h2>🚨 מספרי חירום</h2>
+                <span class="emergency-toggle" id="emergencyArrow">▼</span>
+            </div>
+            <div class="emergency-body" id="emergencyBody">
+                <div class="emergency-grid">
+                    <div class="emergency-card">
+                        <div class="emergency-card__country">🇮🇩 אינדונזיה – חירום</div>
+                        <div class="emergency-card__lines">
+                            חירום כללי: <a href="tel:112">112</a><br>
+                            משטרה: <a href="tel:110">110</a><br>
+                            אמבולנס: <a href="tel:118">118</a> / <a href="tel:119">119</a><br>
+                            כבאות: <a href="tel:113">113</a>
+                        </div>
+                    </div>
+                    <div class="emergency-card">
+                        <div class="emergency-card__country">🚑 משטרת תיירות</div>
+                        <div class="emergency-card__lines">
+                            Bali Tourist Police: <a href="tel:+62361754599">+62 361 754599</a><br>
+                            חיפוש והצלה (BASARNAS): <a href="tel:115">115</a>
+                        </div>
+                    </div>
+                    <div class="emergency-card">
+                        <div class="emergency-card__country">🇮🇱 סיוע קונסולרי</div>
+                        <div class="emergency-card__lines">
+                            לישראל אין שגרירות באינדונזיה.<br>
+                            מוקד חירום קונסולרי (משרד החוץ):<br>
+                            <a href="tel:+97235304222">+972 3 5304222</a>
+                        </div>
+                    </div>
+                    <div class="emergency-card">
+                        <div class="emergency-card__country">📋 ביטוח נסיעות</div>
+                        <div class="emergency-card__lines">
+                            שמרו מספר פוליסה + הוטליין של חברת הביטוח
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Useful Links -->
+        <section class="links-section">
+            <h2>🔗 קישורים שימושיים</h2>
+            <div class="links-cat">
+                <h3>✈️ טיסות</h3>
+                <div class="links-row">
+                    <a class="link-chip" href="https://www.google.com/travel/flights" target="_blank" rel="noopener">Google Flights</a>
+                    <a class="link-chip" href="https://www.skyscanner.net" target="_blank" rel="noopener">Skyscanner</a>
+                    <a class="link-chip" href="https://www.kayak.com" target="_blank" rel="noopener">Kayak</a>
+                </div>
+            </div>
+            <div class="links-cat">
+                <h3>🏨 לינה</h3>
+                <div class="links-row">
+                    <a class="link-chip" href="https://www.booking.com" target="_blank" rel="noopener">Booking.com</a>
+                    <a class="link-chip" href="https://www.airbnb.com" target="_blank" rel="noopener">Airbnb</a>
+                    <a class="link-chip" href="https://www.hotels.com" target="_blank" rel="noopener">Hotels.com</a>
+                </div>
+            </div>
+            <div class="links-cat">
+                <h3>🚗 השכרת רכב</h3>
+                <div class="links-row">
+                    <a class="link-chip" href="https://www.rentalcars.com" target="_blank" rel="noopener">RentalCars</a>
+                    <a class="link-chip" href="https://www.discovercars.com" target="_blank" rel="noopener">DiscoverCars</a>
+                    <a class="link-chip" href="https://www.sixt.com" target="_blank" rel="noopener">Sixt</a>
+                </div>
+            </div>
+            <div class="links-cat">
+                <h3>🌍 המלצות ומידע</h3>
+                <div class="links-row">
+                    <a class="link-chip" href="https://www.tripadvisor.com" target="_blank" rel="noopener">TripAdvisor</a>
+                    <a class="link-chip" href="https://www.wikivoyage.org" target="_blank" rel="noopener">Wikivoyage</a>
+                    <a class="link-chip" href="https://www.lonelyplanet.com" target="_blank" rel="noopener">Lonely Planet</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>תכנון טיול אישי</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/countdown.js"></script>
+    <script src="js/currency.js"></script>
+    <script src="js/weather.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/ai-chat.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initMobileMenu === 'function') initMobileMenu();
+            if (typeof renderCountryCards === 'function') renderCountryCards();
+
+            // Emergency toggle
+            var toggle = document.getElementById('emergencyToggle');
+            var body = document.getElementById('emergencyBody');
+            var arrow = document.getElementById('emergencyArrow');
+            if (toggle) {
+                toggle.addEventListener('click', function() {
+                    var open = body.classList.toggle('open');
+                    arrow.classList.toggle('open', open);
+                });
+            }
+
+            // Playlist
+            var PLAYLIST_KEY = 'playlist_url';
+            var area = document.getElementById('playlistArea');
+            function toEmbed(url) {
+                var sp = url.match(/spotify\.com\/(playlist|album|track)\/([a-zA-Z0-9]+)/);
+                if (sp) return 'https://open.spotify.com/embed/' + sp[1] + '/' + sp[2] + '?utm_source=generator';
+                var ytList = url.match(/[?&]list=([^&]+)/);
+                if (ytList) return 'https://www.youtube.com/embed/videoseries?list=' + ytList[1];
+                var ytV = url.match(/(?:youtu\.be\/|[?&]v=)([^&?]+)/);
+                if (ytV) return 'https://www.youtube.com/embed/' + ytV[1];
+                return url;
+            }
+            function renderPlaylist() {
+                var saved = localStorage.getItem(PLAYLIST_KEY);
+                if (saved) {
+                    area.innerHTML =
+                        '<div class="playlist-iframe-wrap"><iframe src="' + toEmbed(saved) + '" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture" loading="lazy"></iframe></div>' +
+                        '<button class="playlist-change" id="playlistChange">שנה פלייליסט</button>';
+                    document.getElementById('playlistChange').addEventListener('click', showSetup);
+                } else {
+                    showSetup();
+                }
+            }
+            function showSetup() {
+                var saved = localStorage.getItem(PLAYLIST_KEY) || '';
+                area.innerHTML =
+                    '<div class="playlist-setup">' +
+                    '<p>הדבק קישור Spotify או YouTube (פלייליסט / סינגל)</p>' +
+                    '<input type="url" id="playlistInput" placeholder="https://open.spotify.com/playlist/..." value="' + saved + '" dir="ltr">' +
+                    '<button id="playlistSave">שמור</button>' +
+                    '</div>';
+                document.getElementById('playlistSave').addEventListener('click', function() {
+                    var v = (document.getElementById('playlistInput').value || '').trim();
+                    if (!v) return;
+                    localStorage.setItem(PLAYLIST_KEY, v);
+                    renderPlaylist();
+                });
+            }
+            if (area) renderPlaylist();
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
+</body>
+</html>

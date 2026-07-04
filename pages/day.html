@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>יום – ירח דבש באינדונזיה</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">ירח דבש 🌴</div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="../index.html">בית</a></li>
+                <li><a href="uluwatu.html">אולוואטו</a></li>
+                <li><a href="rajaampat.html">ראג׳ה אמפט</a></li>
+                <li><a href="sideman.html">סידמן</a></li>
+                <li><a href="gili.html">גילי אייר</a></li>
+                <li><a href="nusa.html">נוסה</a></li>
+                <li><a href="munduk.html">מונדוק</a></li>
+                <li><a href="ubud.html">אובוד</a></li>
+                <li><a href="../tips.html">טיפים</a></li>
+                <li><a href="../todo.html">משימות</a></li>
+                <li><a href="packing.html">אריזה</a></li>
+                <li><a href="budget.html">תקציב</a></li>
+            </ul>
+            <button class="hamburger" id="hamburger" aria-label="תפריט">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <p class="breadcrumb" id="breadcrumb"></p>
+        <section class="day-header">
+            <h1 id="dayTitle"></h1>
+            <p class="day-meta" id="dayMeta"></p>
+        </section>
+        <section class="day-page">
+            <div class="activities-section">
+                <h2>תכנית היום – ציר זמן</h2>
+                <div class="timeline-container">
+                    <div class="timeline-line"></div>
+                    <div id="timelinePlaceholder"></div>
+                </div>
+            </div>
+            <div id="dayFilesMount" class="day-files-section"></div>
+        </section>
+    </main>
+
+    <footer class="footer"><div class="container"><p>תכנון טיול אישי – קיץ 2026</p></div></footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var countryId = params.get('country') || '';
+            var weekNum = params.get('week') || '1';
+            var dayNum = params.get('day') || '1';
+            var result = getDayFromParams(countryId, weekNum, dayNum);
+            if (!result) {
+                document.getElementById('dayTitle').textContent = 'היום לא נמצא';
+                document.getElementById('breadcrumb').innerHTML = '<a href="../index.html">בית</a>';
+                return;
+            }
+            var country = result.country;
+            var week = result.week;
+            var day = result.day;
+            window.TIMELINE_DOC_ID = getDayDocId(country.id, week.weekNum, day.dayNum);
+
+            var countryPage = country.id + '.html';
+            document.getElementById('breadcrumb').innerHTML =
+                '<a href="../index.html">בית</a> ← <a href="' + countryPage + '">' + country.name + '</a> ← שבוע ' + week.weekNum + ' ← יום ' + day.dayNum;
+            document.getElementById('dayTitle').textContent = country.name + ' – שבוע ' + week.weekNum + ' – יום ' + day.dayNum;
+            document.getElementById('dayMeta').textContent = (day.date ? formatDate(day.date) + ' · ' : '') + day.label;
+
+            var placeholder = document.getElementById('timelinePlaceholder');
+            if (!document.querySelector('.timeline-item')) {
+                placeholder.innerHTML = '<p class="section-intro">אין עדיין פריטים בציר הזמן. הפעילו מצב עריכה כדי להוסיף פעילויות.</p>';
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                if (typeof window.initDayFilesPanel === 'function') {
+                    window.initDayFilesPanel(window.TIMELINE_DOC_ID);
+                }
+            });
+        })();
+    </script>
+    <script src="../js/edit-mode.js"></script>
+    <script src="../js/day-files.js"></script>
+</body>
+</html>

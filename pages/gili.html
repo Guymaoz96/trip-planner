@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>גילי אייר – ירח דבש באינדונזיה</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#ff9a9e">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="page-country">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">ירח דבש 🌴</div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="../index.html">בית</a></li>
+                <li><a href="uluwatu.html">אולוואטו</a></li>
+                <li><a href="rajaampat.html">ראג׳ה אמפט</a></li>
+                <li><a href="sideman.html">סידמן</a></li>
+                <li><a href="gili.html" class="active">גילי אייר</a></li>
+                <li><a href="nusa.html">נוסה</a></li>
+                <li><a href="munduk.html">מונדוק</a></li>
+                <li><a href="ubud.html">אובוד</a></li>
+                <li><a href="../tips.html">טיפים</a></li>
+                <li><a href="../todo.html">משימות</a></li>
+                <li><a href="packing.html">אריזה</a></li>
+                <li><a href="budget.html">תקציב</a></li>
+            </ul>
+            <button class="hamburger" id="hamburger" aria-label="תפריט">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container country-main">
+        <p class="breadcrumb"><a href="../index.html">בית</a> ← גילי אייר</p>
+        <header class="country-hero">
+            <h1 class="country-hero__title">🐢 גילי אייר</h1>
+            <p class="country-hero__lead">2–4.8 · אי קטן וכיפי — מסעדות, ברים ושנורקל עם צבים. בלי מכוניות.</p>
+        </header>
+
+        <div class="country-page-shell" id="countryPageShell">
+            <div id="countryToolbarMount"></div>
+            <div class="country-split-view">
+                <aside class="country-rail-wrap" id="countryRailMount" aria-label="ימי הטיול"></aside>
+                <div class="country-detail-shell" id="countryDetailShell">
+                    <div class="country-detail-empty" id="countryDetailEmpty">
+                        <div class="country-detail-empty__icon" aria-hidden="true">📅</div>
+                        <p class="country-detail-empty__title">בחרו יום מהרשימה</p>
+                        <p class="country-detail-empty__text">כאן יופיעו התיאור המלא וציר הזמן</p>
+                    </div>
+                    <div id="countryDetailContent" class="country-detail-content" hidden></div>
+                </div>
+            </div>
+            <button type="button" id="countryDetailBackdrop" class="country-detail-backdrop" hidden aria-label="סגירת פירוט היום"></button>
+        </div>
+    </main>
+
+    <section class="container recs-section">
+        <h2>💡 המלצות מהחברים — גילי אייר</h2>
+        <div class="recs-note">אי חמוד וקטן, יחסית מתוייר — בעיקר מסעדות, ברים וסוכנויות טיולים. 2 לילות הספיקו לנו; 3 לילות אם רוצים גם לצאת לטיול.</div>
+        <div class="recs-grid">
+            <div class="recs-card is-info">
+                <h3>⛴️ הגעה ושנורקל</h3>
+                <ul>
+                    <li>מעבורת מבאלי שעוברת ב-2 האיים האחרים בדרך. הפלגנו עם <b>Wijaya Perkasa</b> מ-Padangbai (מזגן, ~2.5 שעות).</li>
+                    <li>אזור שנורקל עם צבים — שווה. אורחי Villa Bagus מקבלים מיטות חינם ב-<b>Biba Beach</b> (אותו בעלים).</li>
+                </ul>
+            </div>
+            <div class="recs-card is-stay">
+                <h3>🏨 לינה</h3>
+                <ul>
+                    <li><b>Villa Bagus</b> — מלון בסיסי וחמוד עם ארוחת בוקר סבבה.</li>
+                </ul>
+            </div>
+            <div class="recs-card is-food">
+                <h3>🍽️ אוכל ויוגה</h3>
+                <ul>
+                    <li><b>Papaya</b> — מסעדת חוף חמודה עם אוכל ברמה.</li>
+                    <li><b>Chupito</b> — מקסיקנית ממש חמודה וטעימה.</li>
+                    <li><b>H2O</b> — יוגה ברמה גבוהה (לוז מסודר באתר).</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="container photos-section">
+        <div class="photos-section-header">
+            <h2>📸 תמונות – גילי אייר</h2>
+            <button class="photo-add-btn" id="photoAddBtn" aria-label="הוסף תמונה">+</button>
+        </div>
+        <div id="photoWall" data-country="gili"></div>
+    </section>
+
+    <footer class="footer"><div class="container"><p>ירח דבש באינדונזיה · גיא &amp; עדי</p></div></footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/edit-mode.js"></script>
+    <script src="../js/country-days.js"></script>
+    <script src="../js/day-files.js"></script>
+    <script src="../js/photos.js"></script>
+    <script src="../js/ai-chat.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initMobileMenu === 'function') initMobileMenu();
+            if (typeof initCountryPage === 'function') initCountryPage('gili');
+        });
+    </script>
+</body>
+</html>

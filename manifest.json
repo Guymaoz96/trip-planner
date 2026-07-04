@@ -1,0 +1,20 @@
+{
+  "name": "ירח דבש באינדונזיה 2026",
+  "short_name": "ירח דבש 🌴",
+  "description": "ירח הדבש של גיא ועדי – מסלול, יעדים, טיפים, משימות, אריזה ותקציב",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffd1dc",
+  "theme_color": "#ff9a9e",
+  "lang": "he",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

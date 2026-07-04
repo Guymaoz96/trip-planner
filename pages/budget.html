@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>תקציב – ירח דבש באינדונזיה</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">ירח דבש 🌴</div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="../index.html">בית</a></li>
+                <li><a href="uluwatu.html">אולוואטו</a></li>
+                <li><a href="rajaampat.html">ראג׳ה אמפט</a></li>
+                <li><a href="sideman.html">סידמן</a></li>
+                <li><a href="gili.html">גילי אייר</a></li>
+                <li><a href="nusa.html">נוסה</a></li>
+                <li><a href="munduk.html">מונדוק</a></li>
+                <li><a href="ubud.html">אובוד</a></li>
+                <li><a href="../tips.html">טיפים</a></li>
+                <li><a href="../todo.html">משימות</a></li>
+                <li><a href="packing.html">אריזה</a></li>
+                <li><a href="budget.html" class="active">תקציב</a></li>
+            </ul>
+            <button class="hamburger" id="hamburger" aria-label="תפריט">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 class="page-title">תקציב הטיול</h1>
+        <p class="section-intro">הכנס סכומים מתוכננים ובפועל. כל שינוי נשמר אוטומטית. סכומים ב-₪.</p>
+
+        <div class="overview" style="margin-bottom:0">
+            <div id="budgetTabs" class="budget-tabs"></div>
+
+            <div class="budget-table-wrap">
+                <table class="budget-table">
+                    <thead>
+                        <tr>
+                            <th>קטגוריה</th>
+                            <th>תיאור</th>
+                            <th>מתוכנן (₪)</th>
+                            <th>בפועל (₪)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="budgetBody"></tbody>
+                </table>
+            </div>
+
+            <div class="budget-add-row">
+                <select id="addCat">
+                    <option value="טיסות">טיסות</option>
+                    <option value="לינה">לינה</option>
+                    <option value="אוכל">אוכל</option>
+                    <option value="פעילויות">פעילויות</option>
+                    <option value="קניות">קניות</option>
+                    <option value="תחבורה">תחבורה</option>
+                    <option value="אחר" selected>אחר</option>
+                </select>
+                <input type="text" id="addLabel" placeholder="תיאור (למשל: מלון ברצלונה)" maxlength="100">
+                <input type="number" id="addPlanned" placeholder="מתוכנן ₪" min="0" style="width:130px">
+                <button type="button" id="budgetAddBtn">הוסף</button>
+            </div>
+
+            <div class="budget-summary">
+                <div class="budget-sum-card">
+                    <div class="budget-sum-label">מתוכנן</div>
+                    <div class="budget-sum-value" id="sumPlanned">—</div>
+                </div>
+                <div class="budget-sum-card">
+                    <div class="budget-sum-label">בפועל</div>
+                    <div class="budget-sum-value" id="sumActual">—</div>
+                </div>
+                <div class="budget-sum-card" id="sumDiffCard">
+                    <div class="budget-sum-label">יתרה</div>
+                    <div class="budget-sum-value" id="sumDiff">—</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer"><div class="container"><p>תכנון טיול אישי – קיץ 2026</p></div></footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/budget.js"></script>
+    <script src="../js/ai-chat.js"></script>
+</body>
+</html>

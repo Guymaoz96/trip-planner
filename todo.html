@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משימות – ירח דבש באינדונזיה</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">ירח דבש 🌴</div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html">בית</a></li>
+                <li><a href="pages/uluwatu.html">אולוואטו</a></li>
+                <li><a href="pages/rajaampat.html">ראג׳ה אמפט</a></li>
+                <li><a href="pages/sideman.html">סידמן</a></li>
+                <li><a href="pages/gili.html">גילי אייר</a></li>
+                <li><a href="pages/nusa.html">נוסה</a></li>
+                <li><a href="pages/munduk.html">מונדוק</a></li>
+                <li><a href="pages/ubud.html">אובוד</a></li>
+                <li><a href="tips.html">טיפים</a></li>
+                <li><a href="todo.html" class="active">משימות</a></li>
+                <li><a href="pages/packing.html">אריזה</a></li>
+                <li><a href="pages/budget.html">תקציב</a></li>
+            </ul>
+            <button class="hamburger" id="hamburger" aria-label="תפריט">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 class="page-title">משימות</h1>
+        <p class="section-intro">רשימה משותפת – לחיצה על המשימה מסמנת ✓ וקו חוצה; לחיצה שוב מבטלת. אפשר גם עם תיבת הסימון.</p>
+        <div class="todo-add">
+            <input type="text" id="todoInput" placeholder="הוסף משימה..." maxlength="500">
+            <button type="button" id="todoAddBtn">הוסף</button>
+        </div>
+        <ul class="todo-list" id="todoList"></ul>
+    </main>
+
+    <footer class="footer"><div class="container"><p>תכנון טיול אישי – קיץ 2026</p></div></footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/todo.js"></script>
+    <script src="js/ai-chat.js"></script>
+</body>
+</html>

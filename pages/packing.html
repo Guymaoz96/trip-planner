@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>אריזה – ירח דבש באינדונזיה</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">ירח דבש 🌴</div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="../index.html">בית</a></li>
+                <li><a href="uluwatu.html">אולוואטו</a></li>
+                <li><a href="rajaampat.html">ראג׳ה אמפט</a></li>
+                <li><a href="sideman.html">סידמן</a></li>
+                <li><a href="gili.html">גילי אייר</a></li>
+                <li><a href="nusa.html">נוסה</a></li>
+                <li><a href="munduk.html">מונדוק</a></li>
+                <li><a href="ubud.html">אובוד</a></li>
+                <li><a href="../tips.html">טיפים</a></li>
+                <li><a href="../todo.html">משימות</a></li>
+                <li><a href="packing.html" class="active">אריזה</a></li>
+                <li><a href="budget.html">תקציב</a></li>
+            </ul>
+            <button class="hamburger" id="hamburger" aria-label="תפריט">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 class="page-title">רשימת אריזה</h1>
+        <p class="section-intro">לסמן פריטים שנארזו, להוסיף דברים שחסרים. נשמר אוטומטית.</p>
+
+        <div id="packingProgress" class="pk-progress"></div>
+
+        <div id="packingFilters" class="packing-filters"></div>
+
+        <div class="packing-add">
+            <select id="packingCat">
+                <option value="ביגוד">ביגוד</option>
+                <option value="מסמכים">מסמכים</option>
+                <option value="גלישה">גלישה</option>
+                <option value="היגיינה">היגיינה</option>
+                <option value="אלקטרוניקה">אלקטרוניקה</option>
+                <option value="תרופות">תרופות</option>
+                <option value="כללי" selected>כללי</option>
+            </select>
+            <input type="text" id="packingInput" placeholder="הוסף פריט..." maxlength="200">
+            <button type="button" id="packingAddBtn">הוסף</button>
+        </div>
+
+        <div id="packingList" class="packing-list" style="margin-top:1.25rem;"></div>
+    </main>
+
+    <footer class="footer"><div class="container"><p>תכנון טיול אישי – קיץ 2026</p></div></footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/packing.js"></script>
+    <script src="../js/ai-chat.js"></script>
+</body>
+</html>

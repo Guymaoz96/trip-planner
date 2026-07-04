@@ -1,0 +1,214 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   TRIP DATA — EXAMPLE. Replace the whole `tripData` object below with the
+   real trip (countries → weeks → days). The rest of the file is generic and
+   should not need changes.
+
+   Model:
+     countries[]            – one entry per country/region, in travel order
+       id                   – lowercase slug, must match the page file name
+                              (e.g. id 'italy'  → pages/italy.html)
+       name                 – display name (Hebrew)
+       intro                – one-line summary shown on the home cards
+       weeks[]              – group days into sensible sections
+         weekNum            – 1,2,3… (unique within the country)
+         label              – section title (optional)
+         days[]
+           dayNum           – running number across the whole country (1,2,3…)
+           date             – 'YYYY-MM-DD'
+           label            – short title for the day
+
+   The per-day timeline, photos, files, to-do, budget and packing are entered
+   by the user inside the running site (saved to Firestore/localStorage) — they
+   are NOT part of this file.
+   ───────────────────────────────────────────────────────────────────────── */
+const tripData = {
+    countries: [
+        {
+            id: 'uluwatu',
+            name: 'אולוואטו',
+            intro: 'נחיתה בבאלי — עיירת גלישה אווירתית, חופים מהממים ושקיעות. נקודת הפתיחה.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'אולוואטו',
+                    days: [
+                        { dayNum: 1, date: '2026-07-19', label: 'נחיתה בבאלי + הגעה לאולוואטו' },
+                        { dayNum: 2, date: '2026-07-20', label: 'חופים: Dreamland / Balangan' },
+                        { dayNum: 3, date: '2026-07-21', label: 'Melasti + מקדש אולוואטו לשקיעה' },
+                        { dayNum: 4, date: '2026-07-22', label: 'גלישה/צ׳יל + שוק Hatch בערב' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'rajaampat',
+            name: 'ראג׳ה אמפט',
+            intro: 'גן עדן צלילה ושנורקל מרוחק — נופים בתוליים ומים צלולים. רוסטי ומזומן בלבד.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'מעבר + מיסול',
+                    days: [
+                        { dayNum: 1, date: '2026-07-23', label: 'טיסה לסורונג (עם קונקשן) + לינת מעבר' },
+                        { dayNum: 2, date: '2026-07-24', label: 'מעבורת/סירה למיסול — Yapap home stay' },
+                        { dayNum: 3, date: '2026-07-25', label: 'מיסול: שנורקל + נקודות תצפית' },
+                        { dayNum: 4, date: '2026-07-26', label: 'מיסול: לגונות וטיולי סירה' }
+                    ]
+                },
+                {
+                    weekNum: 2,
+                    label: 'מנסואר',
+                    days: [
+                        { dayNum: 5, date: '2026-07-27', label: 'מעבר למנסואר — Terimikhasi home stay' },
+                        { dayNum: 6, date: '2026-07-28', label: 'מנסואר: שנורקל + צבים בצד השני' },
+                        { dayNum: 7, date: '2026-07-29', label: 'מנסואר: צלילה/צ׳יל' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'sideman',
+            name: 'סידמן',
+            intro: 'כפר קטן ורגוע — אינסוף טרסות אורז וג׳ונגל. שקט מוחלט.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'סידמן',
+                    days: [
+                        { dayNum: 1, date: '2026-07-30', label: 'טיסה חזרה לבאלי + נסיעה לסידמן (Vishala)' },
+                        { dayNum: 2, date: '2026-07-31', label: 'טרסות אורז + מפל Gembleng באופנוע' },
+                        { dayNum: 3, date: '2026-08-01', label: 'סדנת בישול (Padarama) + צ׳יל בבריכה' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'gili',
+            name: 'גילי אייר',
+            intro: 'אי קטן וכיפי — מסעדות, ברים ושנורקל עם צבים. בלי מכוניות.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'גילי אייר',
+                    days: [
+                        { dayNum: 1, date: '2026-08-02', label: 'מעבורת מ-Padangbai לגילי אייר (Villa Bagus)' },
+                        { dayNum: 2, date: '2026-08-03', label: 'שנורקל צבים (Biba Beach) + יוגה ב-H2O' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'nusa',
+            name: 'נוסה',
+            intro: 'נוסה למבונגן, פנידה וצ׳נינגן — מנטות, חופים דרמטיים וגשר צהוב.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'נוסה למבונגן',
+                    days: [
+                        { dayNum: 1, date: '2026-08-04', label: 'מעבורת לנוסה למבונגן (Su Casa)' },
+                        { dayNum: 2, date: '2026-08-05', label: 'יום צלילות: Manta Point + Crystal Bay (Sober)' },
+                        { dayNum: 3, date: '2026-08-06', label: 'טיול יום לנוסה פנידה עם קומאנג' },
+                        { dayNum: 4, date: '2026-08-07', label: 'צ׳נינגן: Yellow Bridge + Secret Beach + ARNA' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'munduk',
+            name: 'מונדוק',
+            intro: 'הרים, אגמים ואינסוף מפלים — בקתות באוויר קריר. רומנטי ושקט.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'מונדוק',
+                    days: [
+                        { dayNum: 1, date: '2026-08-08', label: 'מעבורת ל-Sanur + נסיעה למונדוק (Munduk Cabins)' },
+                        { dayNum: 2, date: '2026-08-09', label: 'מקדש Ulun Danu + מפל Banyumala + Munduk Escape' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'ubud',
+            name: 'אובוד',
+            intro: 'לב התרבות של באלי — שווקים, טרסות אורז וריזורט ג׳ונגל לסיום. זריחה בבטור.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'אובוד',
+                    days: [
+                        { dayNum: 1, date: '2026-08-10', label: 'נסיעה לאובוד — Art Market + Ubud Palace' },
+                        { dayNum: 2, date: '2026-08-11', label: 'Pyramids of Chi (sound healing) + Tropical' },
+                        { dayNum: 3, date: '2026-08-12', label: 'מעבר ל-Kayon Jungle Resort + Cretya' },
+                        { dayNum: 4, date: '2026-08-13', label: 'זריחה בהר בטור + מעיינות חמים · טיסה הביתה למחרת' }
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
+function getDayDocId(countryId, weekNum, dayNum) {
+    return countryId + '_w' + weekNum + '_d' + dayNum;
+}
+
+function getDayFromParams(countryId, weekNum, dayNum) {
+    const country = tripData.countries.find(c => c.id === countryId);
+    if (!country) return null;
+    const week = country.weeks.find(w => w.weekNum === parseInt(weekNum, 10));
+    if (!week) return null;
+    const day = week.days.find(d => d.dayNum === parseInt(dayNum, 10));
+    return day ? { country, week, day } : null;
+}
+
+function initMobileMenu() {
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('navMenu');
+    if (!hamburger || !navMenu) return;
+    hamburger.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+        hamburger.setAttribute('aria-expanded', navMenu.classList.contains('active'));
+    });
+    document.addEventListener('click', function(e) {
+        if (navMenu.classList.contains('active') && !navMenu.contains(e.target) && !hamburger.contains(e.target)) {
+            navMenu.classList.remove('active');
+            hamburger.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+function setActiveNav(href) {
+    const path = href || (typeof window !== 'undefined' && window.location.pathname) || '';
+    document.querySelectorAll('.nav-menu a').forEach(function(a) {
+        const linkPath = a.getAttribute('href') || '';
+        const isActive = path === linkPath || (path.endsWith(linkPath) && linkPath !== 'index.html' && linkPath !== '.');
+        a.classList.toggle('active', isActive);
+    });
+}
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    var div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+}
+
+function renderCountryCards() {
+    const container = document.getElementById('countryCards');
+    if (!container || !tripData.countries) return;
+    container.innerHTML = tripData.countries.map(function(c) {
+        return (
+            '<a class="country-card" href="pages/' + escapeHtml(c.id) + '.html">' +
+            '<h3>' + escapeHtml(c.name) + '</h3>' +
+            '<p>' + escapeHtml(c.intro) + '</p>' +
+            '</a>'
+        );
+    }).join('');
+}
+
+function formatDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+}
