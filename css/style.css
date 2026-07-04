@@ -1957,6 +1957,17 @@ body.page-country {
 .recs-card.is-stay { border-top-color: #c3a8ff; }
 .recs-card.is-info { border-top-color: #ffc38b; }
 .recs-card h3 { font-size: 1.05rem; margin-bottom: 0.5rem; color: var(--text); }
+.rec-source {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    margin-bottom: 0.55rem;
+    white-space: nowrap;
+}
+.rec-source--neta { background: var(--teal-soft); color: #1f6e5c; }
+.rec-source--roni { background: var(--purple-soft); color: #6b3fa0; }
 .recs-card ul { list-style: none; padding: 0; margin: 0; }
 .recs-card li { padding: 0.35rem 0; border-bottom: 1px dashed rgba(0,0,0,0.07); font-size: 0.94rem; }
 .recs-card li:last-child { border-bottom: none; }
@@ -1970,3 +1981,10 @@ body.page-country {
     font-weight: 600;
     color: var(--text);
 }
+
+/* ── "More destinations" (not-yet-scheduled ideas) page ─────────────────── */
+.dest-block { margin-bottom: 2.5rem; }
+.dest-block:last-child { margin-bottom: 0; }
+.dest-block__header { margin-bottom: 0.4rem; }
+.dest-block__lead { color: var(--text-muted); margin-bottom: 1rem; }
+.dest-block + .dest-block { padding-top: 2rem; border-top: 2px dashed rgba(0,0,0,0.08); }
