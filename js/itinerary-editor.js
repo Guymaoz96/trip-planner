@@ -6,23 +6,12 @@
     var LS_KEY = 'itinerary_override';
     var editModeOn = false;
 
-    /* Ideas already written up on pages/more-destinations.html. Picking one
-       here pre-fills name + a sensible default night count, and shows a
-       preview (title+lead) so the user knows what they're adding. */
-    var CANDIDATE_DESTINATIONS = [
-        { id: 'amed', name: 'עמד', defaultNights: 2,
-          title: '🐚 Amed — צפון באלי',
-          lead: 'עיירה קטנה ומרגיעה, מושלמת לשנורקלינג וצלילה, עם נוף מושלם של הר הגעש אגונג.' },
-        { id: 'lombok', name: 'לומבוק', defaultNights: 5,
-          title: '🏄 לומבוק — קוטה, גלישה וטרק רינג׳אני',
-          lead: 'האחות השקטה והפחות מתויירת של באלי. גלישת גלים וקייט, אוכל מדהים, וטרק לפסגה וולקנית מטורפת (רינג׳אני, 3,726 מ׳).' },
-        { id: 'secretgilis', name: 'Secret Gilis', defaultNights: 2,
-          title: '🌊 Secret Gilis — האיים הדרומיים של לומבוק',
-          lead: 'קבוצת איים שקטים ולא מפותחים — שונה לגמרי מהגיליז הצפוניים. פחות נוחות אך שקט אמיתי ומחירים נמוכים.' },
-        { id: 'flores', name: 'פלורס', defaultNights: 7,
-          title: '🐉 פלורס — הפנינה האמיתית של אינדונזיה',
-          lead: 'פחות מתויר, טבע פראי, חופים בתוליים והצלילות המרגשות ביותר באינדונזיה. מומלץ להקדיש לפחות 10–14 ימים.' }
-    ];
+    /* Ideas already written up on pages/more-destinations.html — full data
+       (incl. map position + recommendations) lives in js/destination-catalog.js,
+       shared with map.js and pages/country.html. Picking one here pre-fills
+       name + a sensible default night count, and shows a preview (title+lead)
+       so the user knows what they're adding. */
+    var CANDIDATE_DESTINATIONS = (typeof DESTINATION_CATALOG !== 'undefined') ? DESTINATION_CATALOG : [];
 
     function esc(s) {
         if (s == null) return '';

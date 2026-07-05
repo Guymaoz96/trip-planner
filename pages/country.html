@@ -64,10 +64,11 @@
         </div>
     </main>
 
-    <!-- No hand-written recommendations exist for a destination added through
-         the editor — a short placeholder replaces the usual recs section. -->
-    <section class="container recs-section">
-        <div class="recs-note">עדיין אין טיפים ליעד הזה. אם תמצאו המלצות (חברים, מדריך וכו') — ספרו לי ואוסיף כאן עמוד מלא כמו ביעדים האחרים.</div>
+    <!-- Filled from js/destination-catalog.js if this id is one of the
+         "יעדים נוספים" candidates (already has written-up recommendations);
+         otherwise stays as the placeholder note. -->
+    <section class="container recs-section" id="recsSection">
+        <div class="recs-note" id="recsPlaceholder">עדיין אין טיפים ליעד הזה. אם תמצאו המלצות (חברים, מדריך וכו') — ספרו לי ואוסיף כאן עמוד מלא כמו ביעדים האחרים.</div>
     </section>
 
     <section class="container photos-section">
@@ -84,6 +85,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="../js/firebase-config.js"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/destination-catalog.js"></script>
     <script src="../js/itinerary-editor.js"></script>
     <script src="../js/edit-mode.js"></script>
     <script src="../js/country-days.js"></script>
@@ -109,6 +111,22 @@
             document.getElementById('breadcrumb').innerHTML = '<a href="../index.html">בית</a> ← ' + country.name.replace(/</g, '&lt;');
             document.getElementById('photosTitle').textContent = '📸 תמונות – ' + country.name;
             document.getElementById('photoWall').setAttribute('data-country', country.id);
+
+            var candidate = (typeof DESTINATION_CATALOG !== 'undefined' ? DESTINATION_CATALOG : [])
+                .find(function (d) { return d.id === country.id; });
+            if (candidate && candidate.recs && candidate.recs.length) {
+                function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+                var grid = document.createElement('div');
+                grid.className = 'recs-grid';
+                grid.innerHTML = candidate.recs.map(function (card) {
+                    return '<div class="recs-card ' + card.cls + '">' +
+                        '<span class="rec-source rec-source--' + candidate.sourceClass + '">' + esc(candidate.sourceLabel) + '</span>' +
+                        '<h3>' + esc(card.heading) + '</h3>' +
+                        '<ul>' + card.items.map(function (item) { return '<li>' + item + '</li>'; }).join('') + '</ul>' +
+                        '</div>';
+                }).join('');
+                document.getElementById('recsPlaceholder').replaceWith(grid);
+            }
 
             if (typeof initCountryPage === 'function') initCountryPage(country.id);
         });
