@@ -149,6 +149,16 @@ const tripData = {
     ]
 };
 
+/* Ids with a hand-authored pages/<id>.html file. Any other id (added via the
+   homepage itinerary editor) falls back to the generic pages/country.html?id=
+   template instead. */
+const HANDWRITTEN_PAGES = ['uluwatu', 'rajaampat', 'sideman', 'gili', 'nusa', 'munduk', 'ubud'];
+
+function countryHref(id, pagesPrefix) {
+    var file = HANDWRITTEN_PAGES.indexOf(id) !== -1 ? (id + '.html') : ('country.html?id=' + encodeURIComponent(id));
+    return pagesPrefix + file;
+}
+
 function getDayDocId(countryId, weekNum, dayNum) {
     return countryId + '_w' + weekNum + '_d' + dayNum;
 }
@@ -199,7 +209,7 @@ function renderCountryCards() {
     if (!container || !tripData.countries) return;
     container.innerHTML = tripData.countries.map(function(c) {
         return (
-            '<a class="country-card" href="pages/' + escapeHtml(c.id) + '.html">' +
+            '<a class="country-card" href="' + escapeHtml(countryHref(c.id, 'pages/')) + '">' +
             '<h3>' + escapeHtml(c.name) + '</h3>' +
             '<p>' + escapeHtml(c.intro) + '</p>' +
             '</a>'
@@ -211,4 +221,70 @@ function formatDate(iso) {
     if (!iso) return '';
     const d = new Date(iso + 'T12:00:00');
     return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/* Renders just the destination <li class="nav-dest"> slice of #navMenu from
+   tripData.countries, leaving the fixed items (home/tips/todo/etc) untouched.
+   Detects root-vs-pages/ depth from the existing "home" link so it works
+   identically on every page. */
+function renderDestNav() {
+    const nav = document.getElementById('navMenu');
+    if (!nav || !tripData.countries) return;
+    const homeLink = nav.querySelector('a[href="index.html"], a[href="../index.html"]');
+    const pagesPrefix = homeLink && homeLink.getAttribute('href') === '../index.html' ? '' : 'pages/';
+    const currentId = (function () {
+        const m = /\/pages\/([a-z0-9-]+)\.html$/i.exec(location.pathname);
+        if (m && HANDWRITTEN_PAGES.indexOf(m[1]) !== -1) return m[1];
+        const params = new URLSearchParams(location.search || '');
+        return params.get('id') || '';
+    })();
+
+    nav.querySelectorAll('li.nav-dest').forEach(function (li) { li.remove(); });
+    const homeLi = homeLink ? homeLink.closest('li') : null;
+    const frag = document.createDocumentFragment();
+    tripData.countries.forEach(function (c) {
+        const li = document.createElement('li');
+        li.className = 'nav-dest';
+        const a = document.createElement('a');
+        a.href = countryHref(c.id, pagesPrefix);
+        if (c.id === currentId) a.className = 'active';
+        a.textContent = c.name;
+        li.appendChild(a);
+        frag.appendChild(li);
+    });
+    if (homeLi && homeLi.nextSibling) homeLi.parentNode.insertBefore(frag, homeLi.nextSibling);
+    else nav.insertBefore(frag, nav.firstChild);
+}
+
+/* Updates the homepage hero-dates/hero-subtitle and the "X ימים · Y יעדים"
+   heading from tripData.countries instead of hardcoded text. No-op on pages
+   without these elements. */
+function renderTripSummary() {
+    const countries = tripData.countries || [];
+    const totalNights = countries.reduce(function (sum, c) {
+        return sum + c.weeks.reduce(function (s, w) { return s + w.days.length; }, 0);
+    }, 0);
+
+    const datesEl = document.querySelector('.hero-dates');
+    if (datesEl) {
+        const firstDay = countries[0] && countries[0].weeks[0] && countries[0].weeks[0].days[0];
+        const lastCountry = countries[countries.length - 1];
+        const lastWeek = lastCountry && lastCountry.weeks[lastCountry.weeks.length - 1];
+        const lastDay = lastWeek && lastWeek.days[lastWeek.days.length - 1];
+        if (firstDay && lastDay && firstDay.date && lastDay.date) {
+            const endDate = new Date(lastDay.date + 'T12:00:00');
+            endDate.setDate(endDate.getDate() + 1);
+            datesEl.textContent = formatDate(firstDay.date) + ' – ' + endDate.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · ' + (totalNights + 1) + ' ימים';
+        }
+    }
+
+    const subtitleEl = document.querySelector('.hero-subtitle');
+    if (subtitleEl) {
+        subtitleEl.textContent = 'גיא & עדי · ' + countries.map(function (c) { return c.name; }).join(' · ');
+    }
+
+    const overviewH2 = document.querySelector('.overview h2');
+    if (overviewH2) {
+        overviewH2.textContent = (totalNights + 1) + ' ימים · ' + countries.length + ' יעדים';
+    }
 }

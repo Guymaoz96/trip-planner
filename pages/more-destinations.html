@@ -17,13 +17,13 @@
             <div class="nav-logo">ירח דבש 🌴</div>
             <ul class="nav-menu" id="navMenu">
                 <li><a href="../index.html">בית</a></li>
-                <li><a href="uluwatu.html">אולוואטו</a></li>
-                <li><a href="rajaampat.html">ראג׳ה אמפט</a></li>
-                <li><a href="sideman.html">סידמן</a></li>
-                <li><a href="gili.html">גילי אייר</a></li>
-                <li><a href="nusa.html">נוסה</a></li>
-                <li><a href="munduk.html">מונדוק</a></li>
-                <li><a href="ubud.html">אובוד</a></li>
+                <li class="nav-dest"><a href="uluwatu.html">אולוואטו</a></li>
+                <li class="nav-dest"><a href="rajaampat.html">ראג׳ה אמפט</a></li>
+                <li class="nav-dest"><a href="sideman.html">סידמן</a></li>
+                <li class="nav-dest"><a href="gili.html">גילי אייר</a></li>
+                <li class="nav-dest"><a href="nusa.html">נוסה</a></li>
+                <li class="nav-dest"><a href="munduk.html">מונדוק</a></li>
+                <li class="nav-dest"><a href="ubud.html">אובוד</a></li>
                 <li><a href="../tips.html">טיפים</a></li>
                 <li><a href="more-destinations.html" class="active">יעדים נוספים</a></li>
                 <li><a href="../todo.html">משימות</a></li>
@@ -40,7 +40,7 @@
         <h1 class="page-title">🧭 יעדים נוספים</h1>
         <p class="section-intro">רעיונות מהמדריך של רוני ושוהם ליעדים שעדיין <b>לא נמצאים במסלול הרשמי</b> שלכם. אם תרצו לשלב מהם משהו — ספרו לי ואעדכן את המסלול בהתאם.</p>
 
-        <div class="dest-block">
+        <div class="dest-block" data-candidate-id="amed">
             <div class="dest-block__header">
                 <h2>🐚 Amed — צפון באלי</h2>
             </div>
@@ -72,7 +72,7 @@
             </div>
         </div>
 
-        <div class="dest-block">
+        <div class="dest-block" data-candidate-id="lombok">
             <div class="dest-block__header">
                 <h2>🏄 לומבוק — קוטה, גלישה וטרק רינג׳אני</h2>
             </div>
@@ -122,7 +122,7 @@
             </div>
         </div>
 
-        <div class="dest-block">
+        <div class="dest-block" data-candidate-id="secretgilis">
             <div class="dest-block__header">
                 <h2>🌊 Secret Gilis — האיים הדרומיים של לומבוק</h2>
             </div>
@@ -149,7 +149,7 @@
             </div>
         </div>
 
-        <div class="dest-block">
+        <div class="dest-block" data-candidate-id="flores">
             <div class="dest-block__header">
                 <h2>🐉 פלורס — הפנינה האמיתית של אינדונזיה</h2>
             </div>
@@ -198,12 +198,26 @@
 
     <footer class="footer"><div class="container"><p>ירח דבש באינדונזיה · גיא &amp; עדי</p></div></footer>
 
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="../js/firebase-config.js"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/itinerary-editor.js"></script>
     <script src="../js/ai-chat.js"></script>
     <script>
+        /* A candidate that's already been added to the real itinerary shouldn't
+           also show up as an unscheduled "idea" — hide its block instead. */
+        function hideScheduledCandidates() {
+            var scheduledIds = (tripData.countries || []).map(function (c) { return c.id; });
+            document.querySelectorAll('.dest-block[data-candidate-id]').forEach(function (block) {
+                block.hidden = scheduledIds.indexOf(block.getAttribute('data-candidate-id')) !== -1;
+            });
+        }
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof initMobileMenu === 'function') initMobileMenu();
+            hideScheduledCandidates();
         });
+        document.addEventListener('tripdatachange', hideScheduledCandidates);
     </script>
 </body>
 </html>
