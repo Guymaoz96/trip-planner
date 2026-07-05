@@ -204,15 +204,40 @@ function escapeHtml(s) {
     return div.innerHTML;
 }
 
+/* Cards always include the edit-row/drag-handle/order-badge markup; CSS
+   shows/hides them based on an "is-editing" class the itinerary editor
+   toggles on the container — this function itself doesn't need to know
+   whether edit mode is on. */
 function renderCountryCards() {
     const container = document.getElementById('countryCards');
     if (!container || !tripData.countries) return;
-    container.innerHTML = tripData.countries.map(function(c) {
+    const countries = tripData.countries;
+    container.innerHTML = countries.map(function (c, i) {
+        var days = [];
+        c.weeks.forEach(function (w) { days = days.concat(w.days); });
+        var nights = days.length;
+        var metaLine = '';
+        if (days.length && days[0].date && days[days.length - 1].date) {
+            metaLine = formatDate(days[0].date) + ' – ' + formatDate(days[days.length - 1].date) + ' · ' + nights + ' לילות';
+        }
+        var introHtml = c.intro ? '<p class="country-card__intro">' + escapeHtml(c.intro) + '</p>' : '';
         return (
-            '<a class="country-card" href="' + escapeHtml(countryHref(c.id, 'pages/')) + '">' +
+            '<div class="country-card" data-idx="' + i + '">' +
+            '<span class="country-card__order">' + (i + 1) + '</span>' +
+            '<a class="country-card__link" href="' + escapeHtml(countryHref(c.id, 'pages/')) + '">' +
             '<h3>' + escapeHtml(c.name) + '</h3>' +
-            '<p>' + escapeHtml(c.intro) + '</p>' +
-            '</a>'
+            '<p class="country-card__meta">' + escapeHtml(metaLine) + '</p>' +
+            introHtml +
+            '</a>' +
+            '<div class="country-card__edit-row">' +
+            '<button type="button" class="country-card__drag" title="גרור לסידור מחדש" aria-label="גרור לסידור מחדש">⠿</button>' +
+            '<label class="country-card__nights-label">לילות ' +
+            '<input type="number" class="country-card__nights-input" min="1" value="' + nights + '"></label>' +
+            '<button type="button" class="edit-btn country-card__up" title="הזז מעלה" aria-label="הזז מעלה"' + (i === 0 ? ' disabled' : '') + '>▲</button>' +
+            '<button type="button" class="edit-btn country-card__down" title="הזז מטה" aria-label="הזז מטה"' + (i === countries.length - 1 ? ' disabled' : '') + '>▼</button>' +
+            '<button type="button" class="delete-btn country-card__remove" title="הסר יעד" aria-label="הסר יעד">🗑️</button>' +
+            '</div>' +
+            '</div>'
         );
     }).join('');
 }

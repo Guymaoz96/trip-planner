@@ -50,26 +50,29 @@
     </section>
 
     <main class="container">
-        <!-- Editable day-by-day plan — see js/itinerary-editor.js. Order/nights
-             are the source of truth; #countryCards below is just for browsing. -->
-        <section class="itinerary-section">
-            <div class="itinerary-header">
-                <h2>📅 המסלול שלנו</h2>
+        <!-- One editable view: cards double as the day-by-day plan. Order/nights
+             live on tripData.countries (js/itinerary-editor.js is the source of
+             truth); each card shows its own dates+nights and, in edit mode, its
+             reorder/nights/remove controls. -->
+        <section class="overview">
+            <div class="overview-header">
+                <h2>27 ימים · 7 יעדים</h2>
                 <span class="itinerary-total" id="itineraryTotal"></span>
                 <button type="button" class="edit-mode-toggle" id="itineraryEditToggle">ערוך מסלול ✏️</button>
             </div>
-            <ol class="itinerary-list" id="itineraryList"></ol>
-            <div class="itinerary-add" id="itineraryAdd" hidden>
-                <select id="addDestSelect" aria-label="בחר יעד"></select>
-                <input type="text" id="addDestCustomName" placeholder="שם היעד" hidden>
-                <input type="number" id="addDestNights" min="1" value="2" aria-label="מספר לילות">
-                <button type="button" id="addDestBtn">+ הוסף יעד</button>
-            </div>
-        </section>
-
-        <section class="overview">
-            <h2>27 ימים · 7 יעדים</h2>
             <div class="country-cards" id="countryCards"></div>
+            <div class="itinerary-add" id="itineraryAdd" hidden>
+                <div class="itinerary-add__row">
+                    <select id="addDestSelect" aria-label="בחר יעד"></select>
+                    <input type="text" id="addDestCustomName" placeholder="שם היעד" hidden>
+                    <input type="number" id="addDestNights" min="1" value="2" aria-label="מספר לילות">
+                    <button type="button" id="addDestBtn">+ הוסף יעד</button>
+                </div>
+                <div class="itinerary-add__preview" id="addDestPreview" hidden>
+                    <h4 id="addDestPreviewTitle"></h4>
+                    <p id="addDestPreviewLead"></p>
+                </div>
+            </div>
         </section>
 
         <!-- Trip Map -->

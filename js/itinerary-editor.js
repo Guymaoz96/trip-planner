@@ -7,12 +7,21 @@
     var editModeOn = false;
 
     /* Ideas already written up on pages/more-destinations.html. Picking one
-       here pre-fills name + a sensible default night count. */
+       here pre-fills name + a sensible default night count, and shows a
+       preview (title+lead) so the user knows what they're adding. */
     var CANDIDATE_DESTINATIONS = [
-        { id: 'amed', name: 'עמד', defaultNights: 2 },
-        { id: 'lombok', name: 'לומבוק', defaultNights: 5 },
-        { id: 'secretgilis', name: 'Secret Gilis', defaultNights: 2 },
-        { id: 'flores', name: 'פלורס', defaultNights: 7 }
+        { id: 'amed', name: 'עמד', defaultNights: 2,
+          title: '🐚 Amed — צפון באלי',
+          lead: 'עיירה קטנה ומרגיעה, מושלמת לשנורקלינג וצלילה, עם נוף מושלם של הר הגעש אגונג.' },
+        { id: 'lombok', name: 'לומבוק', defaultNights: 5,
+          title: '🏄 לומבוק — קוטה, גלישה וטרק רינג׳אני',
+          lead: 'האחות השקטה והפחות מתויירת של באלי. גלישת גלים וקייט, אוכל מדהים, וטרק לפסגה וולקנית מטורפת (רינג׳אני, 3,726 מ׳).' },
+        { id: 'secretgilis', name: 'Secret Gilis', defaultNights: 2,
+          title: '🌊 Secret Gilis — האיים הדרומיים של לומבוק',
+          lead: 'קבוצת איים שקטים ולא מפותחים — שונה לגמרי מהגיליז הצפוניים. פחות נוחות אך שקט אמיתי ומחירים נמוכים.' },
+        { id: 'flores', name: 'פלורס', defaultNights: 7,
+          title: '🐉 פלורס — הפנינה האמיתית של אינדונזיה',
+          lead: 'פחות מתויר, טבע פראי, חופים בתוליים והצלילות המרגשות ביותר באינדונזיה. מומלץ להקדיש לפחות 10–14 ימים.' }
     ];
 
     function esc(s) {
@@ -134,17 +143,12 @@
        script loaded after this one sees the corrected tripData.countries. */
     loadOverrideFromLocalStorage();
 
-    /* ---- editor UI ---- */
-
-    function dayRangeLabel(country) {
-        var days = [];
-        country.weeks.forEach(function (w) { days = days.concat(w.days); });
-        if (!days.length) return '';
-        var first = days[0], last = days[days.length - 1];
-        if (!first.date || !last.date) return '';
-        if (first.date === last.date) return formatDate(first.date);
-        return formatDate(first.date) + ' – ' + formatDate(last.date);
-    }
+    /* ---- editor UI — lives inside the existing #countryCards grid on the
+       homepage. renderCountryCards() (js/main.js) always emits the order
+       badge + edit-row markup; CSS shows/hides them via the "is-editing"
+       class this file toggles on the container. All interaction uses event
+       delegation on the (stable) #countryCards container so it survives the
+       innerHTML rebuilds that happen on every tripdatachange. ---- */
 
     function renderTotal() {
         var el = document.getElementById('itineraryTotal');
@@ -154,83 +158,27 @@
         el.classList.toggle('itinerary-total--warn', n !== TRIP_TOTAL_NIGHTS);
     }
 
-    function renderList() {
-        var list = document.getElementById('itineraryList');
-        if (!list) return;
-        var countries = tripData.countries || [];
-        list.innerHTML = countries.map(function (c, i) {
-            var nights = countryNights(c);
-            var controls = '';
-            if (editModeOn) {
-                controls =
-                    '<div class="itinerary-row__controls">' +
-                    '<label class="itinerary-row__nights-label">לילות ' +
-                    '<input type="number" class="itinerary-row__nights-input" min="1" value="' + nights + '" data-idx="' + i + '"></label>' +
-                    '<button type="button" class="edit-btn itinerary-row__up" data-idx="' + i + '" ' + (i === 0 ? 'disabled' : '') + ' title="הזז מעלה" aria-label="הזז מעלה">▲</button>' +
-                    '<button type="button" class="edit-btn itinerary-row__down" data-idx="' + i + '" ' + (i === countries.length - 1 ? 'disabled' : '') + ' title="הזז מטה" aria-label="הזז מטה">▼</button>' +
-                    '<button type="button" class="delete-btn itinerary-row__remove" data-idx="' + i + '" title="הסר יעד" aria-label="הסר יעד">🗑️</button>' +
-                    '</div>';
-            }
-            return (
-                '<li class="itinerary-row">' +
-                '<div class="itinerary-row__main">' +
-                '<span class="itinerary-row__name">' + esc(c.name) + '</span>' +
-                '<span class="itinerary-row__meta">' + esc(dayRangeLabel(c)) + ' · ' + nights + ' לילות</span>' +
-                '</div>' +
-                controls +
-                '</li>'
-            );
-        }).join('');
-
-        if (!editModeOn) return;
-        list.querySelectorAll('.itinerary-row__nights-input').forEach(function (inp) {
-            inp.addEventListener('change', function () {
-                var idx = parseInt(inp.getAttribute('data-idx'), 10);
-                var country = tripData.countries[idx];
-                if (!country) return;
-                setCountryNights(country, inp.value);
-                recomputeDates();
-                saveOverride();
-                notifyChange();
-            });
-        });
-        list.querySelectorAll('.itinerary-row__up').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var idx = parseInt(btn.getAttribute('data-idx'), 10);
-                if (idx <= 0) return;
-                var arr = tripData.countries;
-                var tmp = arr[idx - 1]; arr[idx - 1] = arr[idx]; arr[idx] = tmp;
-                recomputeDates();
-                saveOverride();
-                notifyChange();
-            });
-        });
-        list.querySelectorAll('.itinerary-row__down').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var idx = parseInt(btn.getAttribute('data-idx'), 10);
-                var arr = tripData.countries;
-                if (idx >= arr.length - 1) return;
-                var tmp = arr[idx + 1]; arr[idx + 1] = arr[idx]; arr[idx] = tmp;
-                recomputeDates();
-                saveOverride();
-                notifyChange();
-            });
-        });
-        list.querySelectorAll('.itinerary-row__remove').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var idx = parseInt(btn.getAttribute('data-idx'), 10);
-                var country = tripData.countries[idx];
-                if (!country) return;
-                if (!confirm('להסיר את "' + country.name + '" מהמסלול? המידע שנשמר לימים שלו (תמונות/קבצים/ציר זמן) יישאר בענן ולא יימחק — אפשר לשחזר בהוספה חוזרת של אותו יעד.')) return;
-                tripData.countries.splice(idx, 1);
-                recomputeDates();
-                saveOverride();
-                notifyChange();
-            });
-        });
+    function moveCountry(idx, delta) {
+        var arr = tripData.countries;
+        var newIdx = idx + delta;
+        if (!arr[idx] || newIdx < 0 || newIdx >= arr.length) return;
+        var tmp = arr[idx]; arr[idx] = arr[newIdx]; arr[newIdx] = tmp;
+        recomputeDates();
+        saveOverride();
+        notifyChange();
     }
 
-    function renderAddForm() {
+    function removeCountry(idx) {
+        var country = tripData.countries[idx];
+        if (!country) return;
+        if (!confirm('להסיר את "' + country.name + '" מהמסלול? המידע שנשמר לימים שלו (תמונות/קבצים/ציר זמן) יישאר בענן ולא יימחק — אפשר לשחזר בהוספה חוזרת של אותו יעד.')) return;
+        tripData.countries.splice(idx, 1);
+        recomputeDates();
+        saveOverride();
+        notifyChange();
+    }
+
+    function renderAddOptions() {
         var select = document.getElementById('addDestSelect');
         if (!select || select.options.length) return; // build once
         var opts = CANDIDATE_DESTINATIONS.map(function (c) {
@@ -243,13 +191,22 @@
         var select = document.getElementById('addDestSelect');
         var customInput = document.getElementById('addDestCustomName');
         var nightsInput = document.getElementById('addDestNights');
+        var preview = document.getElementById('addDestPreview');
         if (!select || !customInput) return;
         var isCustom = select.value === '__custom__';
         customInput.hidden = !isCustom;
-        if (isCustom) { customInput.value = ''; customInput.focus(); }
-        else {
+        if (isCustom) {
+            customInput.value = '';
+            customInput.focus();
+            if (preview) preview.hidden = true;
+        } else {
             var candidate = CANDIDATE_DESTINATIONS.filter(function (c) { return c.id === select.value; })[0];
             if (candidate && nightsInput) nightsInput.value = candidate.defaultNights;
+            if (candidate && preview) {
+                document.getElementById('addDestPreviewTitle').textContent = candidate.title;
+                document.getElementById('addDestPreviewLead').textContent = candidate.lead;
+                preview.hidden = false;
+            }
         }
     }
 
@@ -259,12 +216,13 @@
         var nightsInput = document.getElementById('addDestNights');
         if (!select) return;
         var isCustom = select.value === '__custom__';
-        var name = isCustom ? (customInput.value || '').trim() : (CANDIDATE_DESTINATIONS.filter(function (c) { return c.id === select.value; })[0] || {}).name;
+        var candidate = isCustom ? null : CANDIDATE_DESTINATIONS.filter(function (c) { return c.id === select.value; })[0];
+        var name = isCustom ? (customInput.value || '').trim() : (candidate || {}).name;
         if (!name) { alert('נא להזין שם ליעד.'); return; }
         var id = isCustom ? slugify(name) : select.value;
         if ((tripData.countries || []).some(function (c) { return c.id === id; })) { alert('היעד הזה כבר במסלול.'); return; }
 
-        var country = { id: id, name: name, intro: '', weeks: [{ weekNum: 1, label: '', days: [] }] };
+        var country = { id: id, name: name, intro: candidate ? candidate.lead : '', weeks: [{ weekNum: 1, label: '', days: [] }] };
         setCountryNights(country, (nightsInput && nightsInput.value) || 2);
         tripData.countries.push(country);
         recomputeDates();
@@ -276,31 +234,110 @@
         onAddDestChange();
     }
 
-    function renderEverything() {
-        renderTotal();
-        renderList();
-    }
-
     function toggleEditMode() {
         editModeOn = !editModeOn;
         var toggle = document.getElementById('itineraryEditToggle');
         var addWrap = document.getElementById('itineraryAdd');
+        var grid = document.getElementById('countryCards');
         if (toggle) {
             toggle.textContent = editModeOn ? 'סיום עריכה ✏️' : 'ערוך מסלול ✏️';
             toggle.classList.toggle('active', editModeOn);
         }
         if (addWrap) addWrap.hidden = !editModeOn;
-        renderList();
+        if (grid) grid.classList.toggle('is-editing', editModeOn);
+    }
+
+    /* Pointer-based drag reorder (works for mouse + touch, unlike the native
+       HTML5 DnD API which touch browsers don't support). Uses
+       elementFromPoint so it works correctly whether the grid is 1 or 2
+       columns wide, without any manual layout math. */
+    function attachDragHandlers(grid) {
+        var dragIdx = null;
+        var dragEl = null;
+
+        function clearDropTargets() {
+            grid.querySelectorAll('.country-card').forEach(function (c) {
+                c.classList.remove('drop-target', 'is-dragging');
+            });
+        }
+
+        grid.addEventListener('pointerdown', function (e) {
+            var handle = e.target.closest('.country-card__drag');
+            if (!handle) return;
+            var card = handle.closest('.country-card');
+            if (!card) return;
+            dragIdx = parseInt(card.getAttribute('data-idx'), 10);
+            dragEl = card;
+            card.classList.add('is-dragging');
+            try { handle.setPointerCapture(e.pointerId); } catch (err) {}
+            e.preventDefault();
+        });
+
+        grid.addEventListener('pointermove', function (e) {
+            if (dragIdx === null) return;
+            var target = document.elementFromPoint(e.clientX, e.clientY);
+            var overCard = target && target.closest && target.closest('.country-card');
+            grid.querySelectorAll('.country-card').forEach(function (c) { c.classList.remove('drop-target'); });
+            if (overCard && overCard !== dragEl) overCard.classList.add('drop-target');
+        });
+
+        grid.addEventListener('pointerup', function (e) {
+            if (dragIdx === null) return;
+            var target = document.elementFromPoint(e.clientX, e.clientY);
+            var overCard = target && target.closest && target.closest('.country-card');
+            clearDropTargets();
+            if (overCard && overCard !== dragEl) {
+                var targetIdx = parseInt(overCard.getAttribute('data-idx'), 10);
+                var arr = tripData.countries;
+                var moved = arr.splice(dragIdx, 1)[0];
+                arr.splice(targetIdx, 0, moved);
+                recomputeDates();
+                saveOverride();
+                notifyChange();
+            }
+            dragIdx = null;
+            dragEl = null;
+        });
+
+        grid.addEventListener('pointercancel', function () {
+            clearDropTargets();
+            dragIdx = null;
+            dragEl = null;
+        });
     }
 
     function initItineraryEditor() {
-        var section = document.querySelector('.itinerary-section');
-        if (!section) return; // homepage only
-        renderAddForm();
-        renderEverything();
+        var grid = document.getElementById('countryCards');
+        if (!grid) return; // homepage only
+
+        renderAddOptions();
+        renderTotal();
 
         var toggle = document.getElementById('itineraryEditToggle');
         if (toggle) toggle.addEventListener('click', toggleEditMode);
+
+        grid.addEventListener('click', function (e) {
+            var upBtn = e.target.closest('.country-card__up');
+            var downBtn = e.target.closest('.country-card__down');
+            var removeBtn = e.target.closest('.country-card__remove');
+            if (upBtn) { e.preventDefault(); moveCountry(parseInt(upBtn.closest('.country-card').getAttribute('data-idx'), 10), -1); }
+            else if (downBtn) { e.preventDefault(); moveCountry(parseInt(downBtn.closest('.country-card').getAttribute('data-idx'), 10), 1); }
+            else if (removeBtn) { e.preventDefault(); removeCountry(parseInt(removeBtn.closest('.country-card').getAttribute('data-idx'), 10)); }
+        });
+
+        grid.addEventListener('change', function (e) {
+            if (!e.target.classList.contains('country-card__nights-input')) return;
+            var card = e.target.closest('.country-card');
+            var idx = parseInt(card.getAttribute('data-idx'), 10);
+            var country = tripData.countries[idx];
+            if (!country) return;
+            setCountryNights(country, e.target.value);
+            recomputeDates();
+            saveOverride();
+            notifyChange();
+        });
+
+        attachDragHandlers(grid);
 
         var select = document.getElementById('addDestSelect');
         if (select) select.addEventListener('change', onAddDestChange);
@@ -318,7 +355,7 @@
         if (typeof renderDestNav === 'function') renderDestNav();
         if (typeof renderCountryCards === 'function') renderCountryCards();
         if (typeof renderTripSummary === 'function') renderTripSummary();
-        renderEverything();
+        renderTotal();
     });
 
     document.addEventListener('DOMContentLoaded', function () {
