@@ -16,17 +16,20 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">ירח דבש 🌴</div>
-            <!-- One <li> per country (href pages/<id>.html) + the fixed tabs. -->
+            <!-- Destination <li>s (class="nav-dest") are rebuilt at runtime by
+                 renderDestNav() in js/main.js from tripData.countries — these
+                 are just the initial/fallback markup before JS runs. -->
             <ul class="nav-menu" id="navMenu">
                 <li><a href="index.html" class="active">בית</a></li>
-                <li><a href="pages/uluwatu.html">אולוואטו</a></li>
-                <li><a href="pages/rajaampat.html">ראג׳ה אמפט</a></li>
-                <li><a href="pages/sideman.html">סידמן</a></li>
-                <li><a href="pages/gili.html">גילי אייר</a></li>
-                <li><a href="pages/nusa.html">נוסה</a></li>
-                <li><a href="pages/munduk.html">מונדוק</a></li>
-                <li><a href="pages/ubud.html">אובוד</a></li>
+                <li class="nav-dest"><a href="pages/uluwatu.html">אולוואטו</a></li>
+                <li class="nav-dest"><a href="pages/rajaampat.html">ראג׳ה אמפט</a></li>
+                <li class="nav-dest"><a href="pages/sideman.html">סידמן</a></li>
+                <li class="nav-dest"><a href="pages/gili.html">גילי אייר</a></li>
+                <li class="nav-dest"><a href="pages/nusa.html">נוסה</a></li>
+                <li class="nav-dest"><a href="pages/munduk.html">מונדוק</a></li>
+                <li class="nav-dest"><a href="pages/ubud.html">אובוד</a></li>
                 <li><a href="tips.html">טיפים</a></li>
+                <li><a href="pages/more-destinations.html">יעדים נוספים</a></li>
                 <li><a href="todo.html">משימות</a></li>
                 <li><a href="pages/packing.html">אריזה</a></li>
                 <li><a href="pages/budget.html">תקציב</a></li>
@@ -47,9 +50,29 @@
     </section>
 
     <main class="container">
+        <!-- One editable view: cards double as the day-by-day plan. Order/nights
+             live on tripData.countries (js/itinerary-editor.js is the source of
+             truth); each card shows its own dates+nights and, in edit mode, its
+             reorder/nights/remove controls. -->
         <section class="overview">
-            <h2>27 ימים · 7 יעדים</h2>
+            <div class="overview-header">
+                <h2>27 ימים · 7 יעדים</h2>
+                <span class="itinerary-total" id="itineraryTotal"></span>
+                <button type="button" class="edit-mode-toggle" id="itineraryEditToggle">ערוך מסלול ✏️</button>
+            </div>
             <div class="country-cards" id="countryCards"></div>
+            <div class="itinerary-add" id="itineraryAdd" hidden>
+                <div class="itinerary-add__row">
+                    <select id="addDestSelect" aria-label="בחר יעד"></select>
+                    <input type="text" id="addDestCustomName" placeholder="שם היעד" hidden>
+                    <input type="number" id="addDestNights" min="1" value="2" aria-label="מספר לילות">
+                    <button type="button" id="addDestBtn">+ הוסף יעד</button>
+                </div>
+                <div class="itinerary-add__preview" id="addDestPreview" hidden>
+                    <h4 id="addDestPreviewTitle"></h4>
+                    <p id="addDestPreviewLead"></p>
+                </div>
+            </div>
         </section>
 
         <!-- Trip Map -->
@@ -215,8 +238,13 @@
         </div>
     </footer>
 
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/destination-catalog.js"></script>
+    <script src="js/itinerary-editor.js"></script>
     <script src="js/countdown.js"></script>
     <script src="js/currency.js"></script>
     <script src="js/weather.js"></script>

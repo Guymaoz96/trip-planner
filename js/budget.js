@@ -3,19 +3,16 @@
     var DOC_ID = 'main';
     var LS_KEY = 'budget_main';
 
-    /* EXAMPLE — one tab per country. `key` should match the country id in main.js. */
-    var COUNTRIES = [
-        { key: 'uluwatu', label: 'אולוואטו' },
-        { key: 'rajaampat', label: 'ראג׳ה אמפט' },
-        { key: 'sideman', label: 'סידמן' },
-        { key: 'gili', label: 'גילי אייר' },
-        { key: 'nusa', label: 'נוסה' },
-        { key: 'munduk', label: 'מונדוק' },
-        { key: 'ubud', label: 'אובוד' }
-    ];
+    /* One tab per country, derived from tripData.countries (js/main.js) so the
+       itinerary editor's add/remove/reorder is reflected here automatically. */
+    function getCountries() {
+        return (typeof tripData !== 'undefined' && tripData.countries || []).map(function (c) {
+            return { key: c.id, label: c.name };
+        });
+    }
     var CATEGORIES = ['טיסות', 'לינה', 'אוכל', 'פעילויות', 'קניות', 'תחבורה', 'אחר'];
 
-    var state = { items: [], tab: (COUNTRIES[0] && COUNTRIES[0].key) || '' };
+    var state = { items: [], tab: '' };
 
     function id() { return 'b' + Date.now() + '_' + Math.random().toString(36).slice(2, 7); }
 
@@ -79,7 +76,11 @@
     function renderTabs() {
         var el = document.getElementById('budgetTabs');
         if (!el) return;
-        el.innerHTML = COUNTRIES.map(function (c) {
+        var countries = getCountries();
+        if (!countries.some(function (c) { return c.key === state.tab; })) {
+            state.tab = (countries[0] && countries[0].key) || '';
+        }
+        el.innerHTML = countries.map(function (c) {
             var active = c.key === state.tab ? ' active' : '';
             return '<button class="budget-tab' + active + '" data-c="' + c.key + '">' + esc(c.label) + '</button>';
         }).join('');
@@ -172,6 +173,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof initMobileMenu === 'function') initMobileMenu();
 
+        state.tab = (getCountries()[0] || {}).key || '';
         loadFs(function (items) {
             state.items = items;
             render();
@@ -182,4 +184,6 @@
         if (addBtn) addBtn.addEventListener('click', addItem);
         if (labelEl) labelEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') addItem(); });
     });
+
+    document.addEventListener('tripdatachange', render);
 })();

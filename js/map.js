@@ -1,34 +1,85 @@
 (function () {
     'use strict';
-    document.addEventListener('DOMContentLoaded', function () {
+    var mapInstance = null;
+    var markersLayer = null;
+
+    /* Per-id map metadata (lat/lon can't be derived from tripData). The pin
+       NUMBER and DATE RANGE are never read from here — both are computed
+       fresh from tripData.countries' current order/dates on every render, so
+       reordering/adding/removing in the itinerary editor stays in sync. A
+       destination added from "יעדים נוספים" (js/destination-catalog.js) gets
+       its pin from there automatically; a fully custom name has no
+       coordinates anywhere and simply gets no pin. */
+    var STOP_META = {
+        uluwatu: { pos: [-8.8290, 115.0849], flag: '🏄', sub: 'חופים וגלישה', color: '#ff9a9e' },
+        rajaampat: { pos: [-0.2333, 130.8167], flag: '🐠', sub: 'צלילה ושנורקל', color: '#88d8c0' },
+        sideman: { pos: [-8.4350, 115.4450], flag: '🌾', sub: 'טרסות אורז', color: '#a8c0ff' },
+        gili: { pos: [-8.3575, 116.0847], flag: '🐢', sub: 'אי צבים', color: '#ffc38b' },
+        nusa: { pos: [-8.6813, 115.4531], flag: '🤿', sub: 'מנטות וחופים', color: '#c3a8ff' },
+        munduk: { pos: [-8.2650, 115.0680], flag: '⛰️', sub: 'הרים ומפלים', color: '#8bd3ff' },
+        ubud: { pos: [-8.5069, 115.2625], flag: '🌴', sub: 'תרבות וג׳ונגל', color: '#ffb3c8' }
+    };
+
+    function candidateMeta(id) {
+        if (typeof DESTINATION_CATALOG === 'undefined') return null;
+        var c = DESTINATION_CATALOG.filter(function (d) { return d.id === id; })[0];
+        if (!c || !c.pos) return null;
+        return { pos: c.pos, flag: '', sub: '', color: c.color || '#cbd5e0' };
+    }
+
+    function compactRange(days) {
+        if (!days.length) return '';
+        var first = new Date(days[0].date + 'T12:00:00');
+        var last = new Date(days[days.length - 1].date + 'T12:00:00');
+        function dm(d) { return d.getDate() + '.' + (d.getMonth() + 1); }
+        if (days[0].date === days[days.length - 1].date) return dm(first);
+        if (first.getMonth() === last.getMonth()) return first.getDate() + '–' + dm(last);
+        return dm(first) + '–' + dm(last);
+    }
+
+    /* Order + dates always reflect tripData.countries' current state; only
+       lat/lon/color/sub come from the static lookups above. */
+    function activeStopsInOrder() {
+        var countries = (typeof tripData !== 'undefined' && tripData.countries) || [];
+        var result = [];
+        countries.forEach(function (c, i) {
+            var meta = STOP_META[c.id] || candidateMeta(c.id);
+            if (!meta) return;
+            var days = [];
+            c.weeks.forEach(function (w) { days = days.concat(w.days); });
+            result.push({
+                pos: meta.pos,
+                label: String(i + 1),
+                title: (meta.flag ? meta.flag + ' ' : '') + c.name,
+                sub: meta.sub || '',
+                dates: compactRange(days),
+                color: meta.color
+            });
+        });
+        return result;
+    }
+
+    function render() {
         var el = document.getElementById('tripMap');
         if (!el || typeof L === 'undefined') return;
+        var active = activeStopsInOrder();
+        if (!active.length) return;
 
-        var map = L.map('tripMap', { scrollWheelZoom: false, zoomControl: true })
-            .setView([-6, 122], 5);
+        if (!mapInstance) {
+            mapInstance = L.map('tripMap', { scrollWheelZoom: false, zoomControl: true }).setView([-6, 122], 5);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 18
+            }).addTo(mapInstance);
+        }
+        if (markersLayer) markersLayer.remove();
+        markersLayer = L.layerGroup().addTo(mapInstance);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-            subdomains: 'abcd',
-            maxZoom: 18
-        }).addTo(map);
+        var line = active.map(function (s) { return s.pos; });
+        L.polyline(line, { color: '#ff9a9e', weight: 2.5, dashArray: '10, 8', opacity: 0.7 }).addTo(markersLayer);
 
-        /* EXAMPLE stops. One per major destination, in travel order.
-           pos: [lat, lon] · label: pin number · dates/sub: shown in popup. */
-        var stops = [
-            { pos: [-8.8290, 115.0849], label: '1', title: '🏄 אולוואטו', sub: 'חופים וגלישה', dates: '19–23.7', color: '#ff9a9e' },
-            { pos: [-0.2333, 130.8167], label: '2', title: '🐠 ראג׳ה אמפט', sub: 'צלילה ושנורקל', dates: '23–30.7', color: '#88d8c0' },
-            { pos: [-8.4350, 115.4450], label: '3', title: '🌾 סידמן', sub: 'טרסות אורז', dates: '30.7–2.8', color: '#a8c0ff' },
-            { pos: [-8.3575, 116.0847], label: '4', title: '🐢 גילי אייר', sub: 'אי צבים', dates: '2–4.8', color: '#ffc38b' },
-            { pos: [-8.6813, 115.4531], label: '5', title: '🤿 נוסה', sub: 'מנטות וחופים', dates: '4–8.8', color: '#c3a8ff' },
-            { pos: [-8.2650, 115.0680], label: '6', title: '⛰️ מונדוק', sub: 'הרים ומפלים', dates: '8–10.8', color: '#8bd3ff' },
-            { pos: [-8.5069, 115.2625], label: '7', title: '🌴 אובוד', sub: 'תרבות וג׳ונגל', dates: '10–14.8', color: '#ffb3c8' }
-        ];
-
-        var line = stops.map(function (s) { return s.pos; });
-        L.polyline(line, { color: '#ff9a9e', weight: 2.5, dashArray: '10, 8', opacity: 0.7 }).addTo(map);
-
-        stops.forEach(function (s) {
+        active.forEach(function (s) {
             var icon = L.divIcon({
                 html: '<div style="background:' + s.color + ';color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;box-shadow:0 3px 10px rgba(0,0,0,0.2);border:2px solid #fff;">' + s.label + '</div>',
                 className: '',
@@ -36,16 +87,19 @@
                 iconAnchor: [15, 15],
                 popupAnchor: [0, -18]
             });
-            L.marker(s.pos, { icon: icon }).addTo(map)
+            L.marker(s.pos, { icon: icon }).addTo(markersLayer)
                 .bindPopup(
                     '<div style="text-align:right;direction:rtl;font-family:Assistant,sans-serif;min-width:140px">' +
                     '<b style="font-size:1rem">' + s.title + '</b><br>' +
-                    '<span style="color:#718096;font-size:0.85rem">' + s.sub + '</span><br>' +
+                    (s.sub ? '<span style="color:#718096;font-size:0.85rem">' + s.sub + '</span><br>' : '') +
                     '<span style="color:#ff9a9e;font-weight:600;font-size:0.85rem">' + s.dates + '</span>' +
                     '</div>'
                 );
         });
 
-        map.fitBounds(line, { padding: [40, 40] });
-    });
+        mapInstance.fitBounds(line, { padding: [40, 40] });
+    }
+
+    document.addEventListener('DOMContentLoaded', render);
+    document.addEventListener('tripdatachange', render);
 })();

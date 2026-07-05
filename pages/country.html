@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>סידמן – ירח דבש באינדונזיה</title>
+    <!-- Generic destination page for any id NOT in HANDWRITTEN_PAGES (js/main.js) —
+         i.e. anything added via the homepage itinerary editor that isn't one of
+         the 7 hand-authored pages. Reads ?id= and renders dynamically, mirroring
+         the pages/day.html?country=&week=&day= query-param pattern. -->
+    <title id="pageTitle">יעד – ירח דבש באינדונזיה</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#ff9a9e">
     <link rel="stylesheet" href="../css/style.css">
@@ -19,7 +23,7 @@
                 <li><a href="../index.html">בית</a></li>
                 <li class="nav-dest"><a href="uluwatu.html">אולוואטו</a></li>
                 <li class="nav-dest"><a href="rajaampat.html">ראג׳ה אמפט</a></li>
-                <li class="nav-dest"><a href="sideman.html" class="active">סידמן</a></li>
+                <li class="nav-dest"><a href="sideman.html">סידמן</a></li>
                 <li class="nav-dest"><a href="gili.html">גילי אייר</a></li>
                 <li class="nav-dest"><a href="nusa.html">נוסה</a></li>
                 <li class="nav-dest"><a href="munduk.html">מונדוק</a></li>
@@ -37,10 +41,10 @@
     </nav>
 
     <main class="container country-main">
-        <p class="breadcrumb"><a href="../index.html">בית</a> ← סידמן</p>
+        <p class="breadcrumb" id="breadcrumb"><a href="../index.html">בית</a></p>
         <header class="country-hero">
-            <h1 class="country-hero__title">🌾 סידמן</h1>
-            <p class="country-hero__lead">30.7–2.8 · כפר קטן ורגוע — אינסוף טרסות אורז וג׳ונגל. שקט מוחלט.</p>
+            <h1 class="country-hero__title" id="countryTitle">טוען…</h1>
+            <p class="country-hero__lead" id="countryLead"></p>
         </header>
 
         <div class="country-page-shell" id="countryPageShell">
@@ -60,43 +64,19 @@
         </div>
     </main>
 
-    <section class="container recs-section">
-        <h2>💡 המלצות מהחברים — סידמן</h2>
-        <div class="recs-note">כפר קטנצ׳יק ורגוע. אין חנויות/סופרים גדולים — לא מקום לסידורים. נסיעה עם אופנוע בסביבה כיפית מאוד, הכל יפייפה והכבישים אחלה.</div>
-        <div class="recs-grid">
-            <div class="recs-card is-stay">
-                <span class="rec-source rec-source--neta">🌺 נטע ואביב</span>
-                <h3>🏡 לינה — Vishala</h3>
-                <ul>
-                    <li>בקתת במבוק מהממת ומושקעת עם בריכה שמשקיפה לנוף. תחושת ג׳ונגל (הרבה חיות/חרקים — גקו, יתושים).</li>
-                    <li>סוגרים דרך הבקתה הכל: סיור שעתיים בטרסות + הסבר על אורז, מסאז׳, טייקאווי, כביסה, אופנוע, מוניות.</li>
-                    <li>שירות 10/10 — המלצה רותחת!</li>
-                </ul>
-            </div>
-            <div class="recs-card is-info">
-                <span class="rec-source rec-source--neta">🌺 נטע ואביב</span>
-                <h3>🌿 פעילויות</h3>
-                <ul>
-                    <li>סדנת בישול חמודה ומושקעת (שעתיים) ב-<b>Padarama</b>.</li>
-                    <li>מפל <b>Gembleng</b> באופנוע — יפה וכיפי, יש שם גם מסעדה עם נוף.</li>
-                </ul>
-            </div>
-            <div class="recs-card is-food">
-                <span class="rec-source rec-source--neta">🌺 נטע ואביב</span>
-                <h3>🍽️ אוכל</h3>
-                <ul>
-                    <li><b>D׳Padi restaurant</b> — שווה לערב.</li>
-                </ul>
-            </div>
-        </div>
+    <!-- Filled from js/destination-catalog.js if this id is one of the
+         "יעדים נוספים" candidates (already has written-up recommendations);
+         otherwise stays as the placeholder note. -->
+    <section class="container recs-section" id="recsSection">
+        <div class="recs-note" id="recsPlaceholder">עדיין אין טיפים ליעד הזה. אם תמצאו המלצות (חברים, מדריך וכו') — ספרו לי ואוסיף כאן עמוד מלא כמו ביעדים האחרים.</div>
     </section>
 
     <section class="container photos-section">
         <div class="photos-section-header">
-            <h2>📸 תמונות – סידמן</h2>
+            <h2 id="photosTitle">📸 תמונות</h2>
             <button class="photo-add-btn" id="photoAddBtn" aria-label="הוסף תמונה">+</button>
         </div>
-        <div id="photoWall" data-country="sideman"></div>
+        <div id="photoWall"></div>
     </section>
 
     <footer class="footer"><div class="container"><p>ירח דבש באינדונזיה · גיא &amp; עדי</p></div></footer>
@@ -105,6 +85,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="../js/firebase-config.js"></script>
     <script src="../js/main.js"></script>
+    <script src="../js/destination-catalog.js"></script>
     <script src="../js/itinerary-editor.js"></script>
     <script src="../js/edit-mode.js"></script>
     <script src="../js/country-days.js"></script>
@@ -114,7 +95,40 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof initMobileMenu === 'function') initMobileMenu();
-            if (typeof initCountryPage === 'function') initCountryPage('sideman');
+
+            var id = new URLSearchParams(location.search).get('id') || '';
+            var country = (tripData.countries || []).find(function (c) { return c.id === id; });
+
+            if (!country) {
+                document.getElementById('countryTitle').textContent = 'היעד לא נמצא';
+                document.getElementById('countryLead').textContent = 'ייתכן שהוסר מהמסלול.';
+                return;
+            }
+
+            document.title = country.name + ' – ירח דבש באינדונזיה';
+            document.getElementById('countryTitle').textContent = country.name;
+            document.getElementById('countryLead').textContent = country.intro || '';
+            document.getElementById('breadcrumb').innerHTML = '<a href="../index.html">בית</a> ← ' + country.name.replace(/</g, '&lt;');
+            document.getElementById('photosTitle').textContent = '📸 תמונות – ' + country.name;
+            document.getElementById('photoWall').setAttribute('data-country', country.id);
+
+            var candidate = (typeof DESTINATION_CATALOG !== 'undefined' ? DESTINATION_CATALOG : [])
+                .find(function (d) { return d.id === country.id; });
+            if (candidate && candidate.recs && candidate.recs.length) {
+                function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+                var grid = document.createElement('div');
+                grid.className = 'recs-grid';
+                grid.innerHTML = candidate.recs.map(function (card) {
+                    return '<div class="recs-card ' + card.cls + '">' +
+                        '<span class="rec-source rec-source--' + candidate.sourceClass + '">' + esc(candidate.sourceLabel) + '</span>' +
+                        '<h3>' + esc(card.heading) + '</h3>' +
+                        '<ul>' + card.items.map(function (item) { return '<li>' + item + '</li>'; }).join('') + '</ul>' +
+                        '</div>';
+                }).join('');
+                document.getElementById('recsPlaceholder').replaceWith(grid);
+            }
+
+            if (typeof initCountryPage === 'function') initCountryPage(country.id);
         });
     </script>
 </body>

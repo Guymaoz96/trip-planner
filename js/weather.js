@@ -56,8 +56,21 @@
         });
     }
 
+    /* Only cities still present in tripData.countries get a card — a removed
+       destination's card disappears instead of showing stale weather. */
+    function activeCities() {
+        var ids = (typeof tripData !== 'undefined' && tripData.countries || []).map(function (c) { return c.id; });
+        return CITIES.filter(function (city) { return ids.indexOf(city.id) !== -1; });
+    }
+
     function render(results) {
-        CITIES.forEach(function (city, i) {
+        var active = activeCities();
+        CITIES.forEach(function (city) {
+            var el = document.getElementById('wx-' + city.id);
+            var card = el && el.closest('.wx-card');
+            if (card) card.hidden = active.indexOf(city) === -1;
+        });
+        active.forEach(function (city, i) {
             var el = document.getElementById('wx-' + city.id);
             if (!el) return;
             var r = results && results[i];
@@ -74,14 +87,23 @@
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        if (!document.getElementById('wx-' + (CITIES[0] && CITIES[0].id))) return;
-
+    function loadAndRender() {
+        var active = activeCities();
+        if (!active.length) { render(null); return; }
         var cached = loadCache();
         if (cached) { render(cached); return; }
 
-        Promise.all(CITIES.map(fetchCity))
+        Promise.all(active.map(fetchCity))
             .then(function (results) { saveCache(results); render(results); })
             .catch(function () { render(null); });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!document.getElementById('wx-' + (CITIES[0] && CITIES[0].id))) return;
+        loadAndRender();
+    });
+
+    document.addEventListener('tripdatachange', function () {
+        if (document.getElementById('wx-' + (CITIES[0] && CITIES[0].id))) loadAndRender();
     });
 })();
