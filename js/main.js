@@ -218,7 +218,7 @@ function renderCountryCards() {
         var nights = days.length;
         var metaLine = '';
         if (days.length && days[0].date && days[days.length - 1].date) {
-            metaLine = formatDate(days[0].date) + ' – ' + formatDate(days[days.length - 1].date) + ' · ' + nights + ' לילות';
+            metaLine = formatDate(days[0].date) + ' – ' + formatDate(checkoutDate(days[days.length - 1].date)) + ' · ' + nights + ' לילות';
         }
         var introHtml = c.intro ? '<p class="country-card__intro">' + escapeHtml(c.intro) + '</p>' : '';
         return (
@@ -246,6 +246,25 @@ function formatDate(iso) {
     if (!iso) return '';
     const d = new Date(iso + 'T12:00:00');
     return d.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function isoAddDays(iso, delta) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T12:00:00');
+    d.setDate(d.getDate() + delta);
+    /* Local components, not toISOString() (UTC) — same reason as
+       recomputeDates() in js/itinerary-editor.js. */
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+/* A `day` entry in tripData is a NIGHT, not a calendar day: days[0].date is
+   the check-in date and the stay ends the MORNING AFTER the last night — which
+   is also the check-in date of the next destination. Any date range shown for
+   a destination must therefore end at lastNight + 1, otherwise every stay
+   looks a night short and consecutive destinations look like they don't
+   touch. */
+function checkoutDate(lastNightIso) {
+    return isoAddDays(lastNightIso, 1);
 }
 
 /* Renders just the destination <li class="nav-dest"> slice of #navMenu from

@@ -2117,3 +2117,169 @@ body.page-country {
     .itinerary-row { flex-direction: column; align-items: stretch; }
     .itinerary-add { flex-direction: column; align-items: stretch; }
 }
+
+/* ── Home view switch + schedule (calendar) view — js/schedule-view.js ──
+   The switch toggles #countryCards ⇄ #scheduleView; both render from the same
+   tripData.countries. Each day cell carries --dest-color / --dest-bg inline
+   (same palette as the map pins). */
+.view-switch {
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(45, 55, 72, 0.08);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+}
+.view-switch__btn {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.view-switch__btn:hover { color: var(--text); }
+.view-switch__btn.active {
+    background: var(--white);
+    color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.sched-month + .sched-month { margin-top: 1.75rem; }
+.sched-month__title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+}
+.sched-dow-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.sched-dow-row span {
+    text-align: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+.sched-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+.sched-day {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 78px;
+    padding: 0.5rem 0.45rem;
+    border-radius: 14px;
+    text-decoration: none;
+    background: var(--white);
+    border: 1px solid rgba(45, 55, 72, 0.06);
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+.sched-day--stay {
+    background: var(--dest-bg);
+    border: 1px solid var(--dest-color);
+    border-top: 4px solid var(--dest-color);
+}
+.sched-day--stay:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+.sched-day--end {
+    background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0 8px, rgba(136, 216, 192, 0.18) 8px 16px);
+    border: 1px dashed var(--accent-color);
+}
+.sched-day--blank { background: transparent; border: none; min-height: 0; }
+.sched-day.is-today { box-shadow: 0 0 0 2px var(--secondary-color); }
+.sched-day__dow { display: none; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); }
+.sched-day__date { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+.sched-day__name {
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+}
+.sched-day__tag {
+    margin-top: auto;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 6px;
+    padding: 1px 5px;
+    align-self: flex-start;
+}
+
+.sched-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(45, 55, 72, 0.08);
+}
+.sched-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    background: var(--dest-bg);
+    border: 1px solid var(--dest-color);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    transition: transform 0.15s;
+}
+.sched-legend__item:hover { transform: translateY(-1px); }
+.sched-legend__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--dest-color);
+    flex-shrink: 0;
+}
+.sched-legend__name { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.sched-legend__meta { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); }
+
+/* Under ~700px a 7-column grid squeezes Hebrew place names to nothing, so the
+   calendar becomes a day-per-row list (weekday moves into the cell). */
+@media (max-width: 700px) {
+    .sched-dow-row { display: none; }
+    .sched-day--blank { display: none; }
+    .sched-grid { grid-template-columns: 1fr; gap: 6px; }
+    .sched-day {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.6rem;
+        min-height: 0;
+        padding: 0.55rem 0.8rem;
+        border-radius: 12px;
+    }
+    .sched-day--stay { border-top-width: 1px; border-inline-start: 5px solid var(--dest-color); }
+    .sched-day__dow { display: inline; min-width: 3.2rem; }
+    .sched-day__date { min-width: 3rem; }
+    .sched-day__tag { margin-top: 0; margin-inline-start: auto; }
+}
+
+@media (max-width: 600px) {
+    .overview-header .view-switch { width: 100%; }
+    .overview-header .view-switch__btn { flex: 1; }
+}
+
+/* [hidden] must beat the display rules these elements already carry — the view
+   switch (js/schedule-view.js) toggles them via the hidden attribute. */
+.country-cards[hidden],
+.schedule-view[hidden],
+.edit-mode-toggle[hidden] { display: none; }
+.overview-header .view-switch { margin: 0 0 0 auto; }
+.overview-header .edit-mode-toggle { margin: 0; }

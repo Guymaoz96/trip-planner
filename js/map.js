@@ -20,6 +20,10 @@
         ubud: { pos: [-8.5069, 115.2625], flag: '🌴', sub: 'תרבות וג׳ונגל', color: '#ffb3c8' }
     };
 
+    /* Shared with js/schedule-view.js so the calendar cells use the same
+       per-destination colors as the map pins. */
+    window.STOP_META = STOP_META;
+
     function candidateMeta(id) {
         if (typeof DESTINATION_CATALOG === 'undefined') return null;
         var c = DESTINATION_CATALOG.filter(function (d) { return d.id === id; })[0];
@@ -27,12 +31,13 @@
         return { pos: c.pos, flag: '', sub: '', color: c.color || '#cbd5e0' };
     }
 
+    /* Check-in → check-out (last night + 1), matching the cards and the
+       schedule view — see checkoutDate() in js/main.js. */
     function compactRange(days) {
         if (!days.length) return '';
         var first = new Date(days[0].date + 'T12:00:00');
-        var last = new Date(days[days.length - 1].date + 'T12:00:00');
+        var last = new Date(checkoutDate(days[days.length - 1].date) + 'T12:00:00');
         function dm(d) { return d.getDate() + '.' + (d.getMonth() + 1); }
-        if (days[0].date === days[days.length - 1].date) return dm(first);
         if (first.getMonth() === last.getMonth()) return first.getDate() + '–' + dm(last);
         return dm(first) + '–' + dm(last);
     }

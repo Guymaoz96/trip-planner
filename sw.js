@@ -1,5 +1,5 @@
 /* Bump CACHE (…-v1 → -v2 → …) whenever you change files, to invalidate old caches. */
-var CACHE = 'trip-v3';
+var CACHE = 'trip-v4';
 /* Core files to pre-cache for offline use. Add one line per country page. */
 var ASSETS = [
   '/index.html',
@@ -13,6 +13,9 @@ var ASSETS = [
   '/js/day-files.js',
   '/js/map.js',
   '/js/weather.js',
+  '/js/destination-catalog.js',
+  '/js/itinerary-editor.js',
+  '/js/schedule-view.js',
   '/pages/uluwatu.html',
   '/pages/rajaampat.html',
   '/pages/sideman.html',
