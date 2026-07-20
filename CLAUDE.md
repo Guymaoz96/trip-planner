@@ -53,7 +53,8 @@ Instead:
    CustomEvent on `document`.
 3. Everything that displays destinations listens for `tripdatachange` and
    re-renders from `tripData.countries`: `renderCountryCards()` and
-   `renderDestNav()` (both in `main.js`), `js/map.js`, `js/budget.js`.
+   `renderDestNav()` (both in `main.js`), `js/map.js`, `js/budget.js`,
+   `js/schedule-view.js`.
    **If you add a new UI surface that shows destinations, wire it to this
    event or it will silently go stale after an edit** — this exact class of
    bug hit the map twice already (pin numbers/dates were static strings,
@@ -76,6 +77,28 @@ Instead:
    page loads `itinerary-editor.js` (so nav stays in sync everywhere);
    `destination-catalog.js` is only needed on `index.html` and
    `pages/country.html`.
+
+### Nights vs. calendar days
+
+A `day` entry in `tripData` is a **night**, not a calendar day. `days[0].date`
+is the check-in date; the stay ends the **morning after the last night**, which
+is also the check-in date of the next destination (5 nights from 19.7 → check
+out 24.7, and the next place checks in on 24.7). Any date range shown for a
+destination must end at `checkoutDate(lastNight)` (`js/main.js`) — used by the
+homepage cards, the map popups and the schedule view. Per-day surfaces (the day
+rail in `js/country-days.js`) still use the raw day dates.
+
+### Schedule (calendar) view
+
+`js/schedule-view.js` renders the same `tripData.countries` as a month
+calendar (`#scheduleView`), toggled against the cards by the segmented
+`#viewSwitch` in the overview header (choice persisted in
+`localStorage['home_view_mode']`). One cell per calendar day colored by where
+we sleep that night, the check-in day of each destination tagged
+"מעבר מ<previous>", plus a final check-out cell. Cell colors come from
+`window.STOP_META` (exported by `js/map.js`) then `DESTINATION_CATALOG`, so
+pins and calendar always agree; it must load **after** `map.js`. Under 700px
+the 7-column grid collapses to a day-per-row list (CSS only).
 
 ### Persistence pattern (reused everywhere: budget, todo, packing, timeline)
 

@@ -58,9 +58,15 @@
             <div class="overview-header">
                 <h2>27 ימים · 7 יעדים</h2>
                 <span class="itinerary-total" id="itineraryTotal"></span>
+                <div class="view-switch" id="viewSwitch" role="tablist" aria-label="תצוגת מסלול">
+                    <button type="button" class="view-switch__btn active" data-view="cards" role="tab" aria-selected="true">כרטיסים</button>
+                    <button type="button" class="view-switch__btn" data-view="schedule" role="tab" aria-selected="false">לוח שנה</button>
+                </div>
                 <button type="button" class="edit-mode-toggle" id="itineraryEditToggle">ערוך מסלול ✏️</button>
             </div>
             <div class="country-cards" id="countryCards"></div>
+            <!-- Calendar view of the same tripData.countries — js/schedule-view.js -->
+            <div class="schedule-view" id="scheduleView" hidden></div>
             <div class="itinerary-add" id="itineraryAdd" hidden>
                 <div class="itinerary-add__row">
                     <select id="addDestSelect" aria-label="בחר יעד"></select>
@@ -249,6 +255,7 @@
     <script src="js/currency.js"></script>
     <script src="js/weather.js"></script>
     <script src="js/map.js"></script>
+    <script src="js/schedule-view.js"></script>
     <script src="js/ai-chat.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
