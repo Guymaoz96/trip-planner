@@ -1,0 +1,99 @@
+# Indonesia Honeymoon Trip Site
+
+Static Hebrew (RTL) trip-planning PWA for Guy & Adi's honeymoon (19 Jul–14 Aug
+2026, Bali/Raja Ampat region). No build step — plain HTML/CSS/JS served as-is.
+Deployed at Netlify, source at `github.com/Guymaoz96/trip-planner`.
+
+**All user-facing text is Hebrew RTL.** Keep it that way — don't translate
+UI copy to English even when writing code/comments in English.
+
+## Deploy & git workflow
+
+- `main` is connected to Netlify — **every push to `main` auto-deploys to
+  production within ~30s.** Opening a session or testing locally never
+  touches production; only `git push origin main` does.
+- Do non-trivial work on a feature branch, verify in the browser preview,
+  then merge to `main` and push only once it's checked. This is the
+  established pattern from every past change to this repo.
+- Firestore rules on the Firebase project only allow six named collections
+  (see `references/firebase-setup.md`). **If you add a new Firestore
+  collection, add its name to that rules list and tell the user to update
+  it in the Firebase console** — writes to an unlisted collection fail
+  silently (permission-denied, caught and console.warn'd, not thrown).
+- Local dev server: `python -m http.server <port> --directory .` (never
+  `file://`, breaks cross-page saving). `.claude/launch.json` (one level up,
+  at the Desktop) holds the preview config.
+- **Local testing gotcha:** the browser aggressively HTTP-caches `<script
+  src>` files across repeated `location.reload()` calls during a dev loop —
+  editing a `.js` file and reloading the *same* origin/port can silently
+  keep running the old version. If behavior looks stale/wrong after an edit,
+  don't assume a bug — first `preview_stop` + `preview_start` on a **new
+  port** (edit `launch.json`) for a guaranteed-fresh origin before debugging
+  further. Lost real time to this once already.
+
+## Architecture — read before editing
+
+`js/main.js` defines the hardcoded default `tripData.countries[]` (id, name,
+intro, weeks→days→date/label). This is the single source of truth for the
+itinerary, but it is **not directly mutated by the UI** — see below.
+
+### The itinerary editor & override pattern
+
+`js/itinerary-editor.js` lets the user reorder/resize/add/remove destinations
+from the homepage (`#countryCards`, edit-mode toggle). It never edits
+`main.js` on disk (can't — static site, browser can't write source files).
+Instead:
+
+1. On load, it synchronously overwrites `tripData.countries` from
+   `localStorage['itinerary_override']` if present (must run before any
+   other script reads `tripData.countries`).
+2. On any mutation, it calls `recomputeDates()` (contiguous from the fixed
+   `TRIP_START`), `saveOverride()` (localStorage + Firestore
+   `tripConfig/main` if `db` configured), and dispatches a `tripdatachange`
+   CustomEvent on `document`.
+3. Everything that displays destinations listens for `tripdatachange` and
+   re-renders from `tripData.countries`: `renderCountryCards()` and
+   `renderDestNav()` (both in `main.js`), `js/map.js`, `js/budget.js`.
+   **If you add a new UI surface that shows destinations, wire it to this
+   event or it will silently go stale after an edit** — this exact class of
+   bug hit the map twice already (pin numbers/dates were static strings,
+   and new destinations had no pin at all).
+4. `js/destination-catalog.js` holds full data (map position, color,
+   description, recommendations) for the 4 "יעדים נוספים" candidates
+   (Amed, Lombok, Secret Gilis, Flores) — shared by the add-destination
+   picker, the map, and `pages/country.html`. A destination typed in fresh
+   (not from this catalog) gets no map pin and no recs — nothing to look up.
+5. `pages/country.html?id=<id>` is a **generic template** for any
+   destination not in `HANDWRITTEN_PAGES` (main.js) — i.e. anything added
+   via the editor that isn't one of the 7 original hand-authored pages
+   (`pages/uluwatu.html` etc.). It reads `?id=`, renders hero/day-rail/photos
+   dynamically via the same `initCountryPage()` used everywhere, and pulls
+   recs from `destination-catalog.js` if the id matches a candidate, else
+   shows a "no tips yet" placeholder.
+6. **Script load order matters.** `destination-catalog.js` and
+   `itinerary-editor.js` must load right after `main.js` and before
+   anything that reads `tripData.countries` or `DESTINATION_CATALOG`. Every
+   page loads `itinerary-editor.js` (so nav stays in sync everywhere);
+   `destination-catalog.js` is only needed on `index.html` and
+   `pages/country.html`.
+
+### Persistence pattern (reused everywhere: budget, todo, packing, timeline)
+
+Always write to `localStorage` first (works with no setup). If
+`js/firebase-config.js` has real (non-placeholder) values, also write to
+Firestore and prefer it on read via `onSnapshot`. Never make Firestore the
+only path — it must degrade gracefully to local-only.
+
+### Attribution system
+
+Recommendation cards (`.recs-card`) carry a `.rec-source` badge
+(`--neta` / `--roni` CSS variants) naming which friends' trip story a tip
+came from. If a third source is ever added, it needs a new CSS variant in
+`css/style.css` — don't reuse an existing color for a different source.
+
+## Known-stale docs
+
+`references/architecture.md` and `README.md` describe the **original
+skill-generated template** (e.g. still mention `surf.html`, don't mention
+the itinerary editor, `destination-catalog.js`, or `pages/country.html`).
+Don't trust them for current architecture — this file supersedes them.
