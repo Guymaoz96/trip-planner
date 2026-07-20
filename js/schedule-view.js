@@ -76,18 +76,32 @@
         return { byDate: byDate, first: dates[0], lastNight: dates[dates.length - 1] };
     }
 
+    function monthSpanTitle(start, end) {
+        var a = MONTHS_HE[start.getMonth()];
+        var b = MONTHS_HE[end.getMonth()];
+        var years = start.getFullYear() === end.getFullYear()
+            ? ' ' + start.getFullYear()
+            : ' ' + start.getFullYear() + '–' + end.getFullYear();
+        return (a === b ? a : a + ' – ' + b) + years;
+    }
+
     function dayCell(iso, info, isEnd, today) {
         var d = parseIso(iso);
         var dowLong = DOW_LONG[d.getDay()];
-        var dateTxt = d.getDate() + '.' + (d.getMonth() + 1);
+        /* The grid runs continuously across months, so the 1st spells its
+           month out — that's the only month marker there is. */
+        var dateTxt = d.getDate() === 1
+            ? '1 ב' + MONTHS_HE[d.getMonth()]
+            : d.getDate() + '.' + (d.getMonth() + 1);
         var isToday = iso === today;
+        var dateCls = 'sched-day__date' + (d.getDate() === 1 ? ' sched-day__date--month' : '');
 
         if (isEnd || !info) {
             /* !info can only happen if the itinerary has a date gap, which
                recomputeDates() prevents — render it as a neutral open day. */
             return '<div class="sched-day sched-day--end' + (isToday ? ' is-today' : '') + '">' +
                 '<span class="sched-day__dow">' + dowLong + '</span>' +
-                '<span class="sched-day__date">' + dateTxt + '</span>' +
+                '<span class="' + dateCls + '">' + dateTxt + '</span>' +
                 '<span class="sched-day__name">' + (isEnd ? 'חזרה הביתה ✈️' : 'יום פנוי') + '</span>' +
                 (isEnd ? '<span class="sched-day__tag">צ׳ק-אאוט</span>' : '') +
                 '</div>';
@@ -103,7 +117,7 @@
             ' style="--dest-color:' + esc(color) + ';--dest-bg:' + esc(withAlpha(color, '2e')) + '"' +
             ' title="' + esc(info.label) + '">' +
             '<span class="sched-day__dow">' + dowLong + '</span>' +
-            '<span class="sched-day__date">' + dateTxt + '</span>' +
+            '<span class="' + dateCls + '">' + dateTxt + '</span>' +
             '<span class="sched-day__name">' + esc(info.country.name) + '</span>' +
             (tag ? '<span class="sched-day__tag">' + esc(tag) + '</span>' : '') +
             '</a>';
@@ -141,35 +155,26 @@
         var cursor = parseIso(index.first);
         var end = parseIso(endIso);
 
-        var html = '';
-        var openMonth = false;
-        var pendingTrail = 0;
+        /* One continuous grid for the whole trip — the weeks run straight from
+           July into August with no month break; the month is called out on the
+           1st of each month instead (sched-day__month). */
+        var html = '<section class="sched-month">' +
+            '<h3 class="sched-month__title">' + monthSpanTitle(cursor, end) + '</h3>' +
+            '<div class="sched-dow-row">' + DOW_SHORT.map(function (d) { return '<span>' + d + '</span>'; }).join('') + '</div>' +
+            '<div class="sched-grid">';
 
-        function closeMonth() {
-            if (!openMonth) return;
-            for (var i = 0; i < pendingTrail; i++) html += blankCell();
-            html += '</div></section>';
-            openMonth = false;
-        }
+        for (var b = 0; b < cursor.getDay(); b++) html += blankCell();
 
+        var trail = 0;
         while (cursor <= end) {
             var iso = isoOf(cursor);
-            if (!openMonth || cursor.getDate() === 1) {
-                closeMonth();
-                html += '<section class="sched-month">' +
-                    '<h3 class="sched-month__title">' + MONTHS_HE[cursor.getMonth()] + ' ' + cursor.getFullYear() + '</h3>' +
-                    '<div class="sched-dow-row">' + DOW_SHORT.map(function (d) { return '<span>' + d + '</span>'; }).join('') + '</div>' +
-                    '<div class="sched-grid">';
-                openMonth = true;
-                for (var b = 0; b < cursor.getDay(); b++) html += blankCell();
-            }
             html += dayCell(iso, index.byDate[iso], iso === endIso && !index.byDate[iso], today);
-            pendingTrail = 6 - cursor.getDay();
+            trail = 6 - cursor.getDay();
             cursor.setDate(cursor.getDate() + 1);
         }
-        closeMonth();
+        for (var t = 0; t < trail; t++) html += blankCell();
 
-        host.innerHTML = html + renderLegend();
+        host.innerHTML = html + '</div></section>' + renderLegend();
     }
 
     /* ---- view switch (cards ⇄ schedule) ---- */
