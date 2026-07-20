@@ -102,6 +102,17 @@ we sleep that night, the check-in day of each destination tagged
 pins and calendar always agree; it must load **after** `map.js`. Under 700px
 the 7-column grid collapses to a day-per-row list (CSS only).
 
+### Relative paths & the service worker
+
+Root pages (`index.html`, `tips.html`, `todo.html`) link to `pages/x.html`;
+pages under `pages/` link to `x.html` — so **any generated link must decide its
+depth from `location.pathname`, never from the surrounding markup** (that's
+what `renderDestNav()` does). `sw.js` is network-first and used to fall back to
+the cached `/index.html` for *any* failed navigation, which rendered the
+homepage under a `/pages/…` URL; markup-derived links then produced
+`/pages/pages/x.html` 404s. The fallback is now root-only, with an offline
+notice for uncached `/pages/` URLs.
+
 ### Persistence pattern (reused everywhere: budget, todo, packing, timeline)
 
 Always write to `localStorage` first (works with no setup). If

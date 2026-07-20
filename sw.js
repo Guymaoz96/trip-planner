@@ -1,5 +1,5 @@
 /* Bump CACHE (…-v1 → -v2 → …) whenever you change files, to invalidate old caches. */
-var CACHE = 'trip-v4';
+var CACHE = 'trip-v5';
 /* Core files to pre-cache for offline use. Add one line per country page. */
 var ASSETS = [
   '/index.html',
@@ -23,6 +23,8 @@ var ASSETS = [
   '/pages/nusa.html',
   '/pages/munduk.html',
   '/pages/ubud.html',
+  '/pages/country.html',
+  '/pages/day.html',
   '/pages/more-destinations.html',
   '/pages/packing.html',
   '/pages/budget.html',
@@ -57,7 +59,25 @@ self.addEventListener('fetch', function (e) {
       return resp;
     }).catch(function () {
       return caches.match(e.request).then(function (cached) {
-        return cached || caches.match('/index.html');
+        if (cached) return cached;
+        var url = new URL(e.request.url);
+        /* pages/country.html?id=x and pages/day.html?… are cached per full
+           URL, so retry without the query string before giving up. */
+        return caches.match(url.origin + url.pathname).then(function (byPath) {
+          if (byPath) return byPath;
+          /* Serving /index.html under a /pages/… URL used to render the
+             homepage while its relative links resolved against /pages/ —
+             every destination tab then pointed at /pages/pages/x.html (404).
+             Only use the homepage as a fallback for root-level URLs. */
+          if (url.pathname.indexOf('/pages/') === -1) return caches.match('/index.html');
+          return new Response(
+            '<!doctype html><html lang="he" dir="rtl"><meta charset="utf-8">' +
+            '<title>אין חיבור</title><body style="font-family:sans-serif;text-align:center;padding:3rem;color:#2d3748">' +
+            '<h1>אין חיבור לאינטרנט</h1><p>הדף הזה עדיין לא נשמר לצפייה במצב לא מקוון.</p>' +
+            '<p><a href="/index.html">חזרה לדף הבית</a></p></body></html>',
+            { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+          );
+        });
       });
     })
   );

@@ -269,13 +269,18 @@ function checkoutDate(lastNightIso) {
 
 /* Renders just the destination <li class="nav-dest"> slice of #navMenu from
    tripData.countries, leaving the fixed items (home/tips/todo/etc) untouched.
-   Detects root-vs-pages/ depth from the existing "home" link so it works
-   identically on every page. */
+
+   The root-vs-pages/ depth comes from location.pathname, NOT from the markup:
+   relative hrefs resolve against the URL the document was served at, so the
+   URL is the only reliable source. Reading it off the "home" link used to
+   produce pages/pages/x.html 404s whenever a document was served under a
+   /pages/ URL with the homepage's markup — which the service worker's offline
+   fallback did (see sw.js). */
 function renderDestNav() {
     const nav = document.getElementById('navMenu');
     if (!nav || !tripData.countries) return;
     const homeLink = nav.querySelector('a[href="index.html"], a[href="../index.html"]');
-    const pagesPrefix = homeLink && homeLink.getAttribute('href') === '../index.html' ? '' : 'pages/';
+    const pagesPrefix = /\/pages\//.test(location.pathname) ? '' : 'pages/';
     const currentId = (function () {
         const m = /\/pages\/([a-z0-9-]+)\.html$/i.exec(location.pathname);
         if (m && HANDWRITTEN_PAGES.indexOf(m[1]) !== -1) return m[1];
