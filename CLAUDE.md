@@ -90,8 +90,10 @@ rail in `js/country-days.js`) still use the raw day dates.
 
 ### Schedule (calendar) view
 
-`js/schedule-view.js` renders the same `tripData.countries` as a month
-calendar (`#scheduleView`), toggled against the cards by the segmented
+`js/schedule-view.js` renders the same `tripData.countries` as one continuous
+7-column calendar grid (`#scheduleView`) running from check-in to check-out
+with no per-month break — the 1st of a month spells its name out inside its
+cell instead. Toggled against the cards by the segmented
 `#viewSwitch` in the overview header (choice persisted in
 `localStorage['home_view_mode']`). One cell per calendar day colored by where
 we sleep that night, the check-in day of each destination tagged
