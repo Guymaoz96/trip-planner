@@ -29,7 +29,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /{collection}/{doc} {
       allow read, write: if collection in
-        ['timeline','dayFiles','photos','todo','budget','packing','tripConfig'];
+        ['timeline','dayFiles','photos','todo','budget','packing','tripConfig','diary'];
     }
   }
 }

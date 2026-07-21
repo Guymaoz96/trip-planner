@@ -147,7 +147,7 @@
         document.querySelectorAll('.day-cube.is-open').forEach(function(el) { el.classList.remove('is-open'); });
     }
 
-    function openDayDetail(countryId, weekNum, dayNum, cubeEl, isGroup, dayEndNum) {
+    function openDayDetail(countryId, weekNum, dayNum, cubeEl, isGroup, dayEndNum, noScroll) {
         var result = getDayFromParams(countryId, String(weekNum), String(dayNum));
         if (!result) return;
 
@@ -248,6 +248,7 @@
             backdrop.onclick = null;
         }
 
+        if (noScroll) return;
         requestAnimationFrame(function() {
             if (cubeEl && typeof cubeEl.scrollIntoView === 'function') {
                 cubeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -441,6 +442,25 @@
         renderRail(countryId);
     }
 
+    /* Landing on an empty "בחרו יום" pane wasted the most valuable slot on the
+       page, so day 1 opens itself. Desktop only: under 720px the detail pane is
+       a full-screen overlay with a backdrop (see the media query in style.css),
+       and auto-opening it would bury the rail the user came to browse. */
+    function openFirstDay() {
+        if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 720px)').matches) return;
+        var cube = document.querySelector('#countryRailMount .day-cube');
+        if (!cube) return;
+        openDayDetail(
+            cube.getAttribute('data-country'),
+            cube.getAttribute('data-week'),
+            cube.getAttribute('data-day'),
+            cube,
+            cube.getAttribute('data-is-group') === '1',
+            cube.getAttribute('data-day-end') || '',
+            true
+        );
+    }
+
     function initCountryPage(countryId) {
         currentCountryId = countryId;
         if (!document.getElementById('countryRailMount')) {
@@ -462,6 +482,7 @@
                 onDayClick({ target: cube });
             });
         }
+        openFirstDay();
         if (!window.__countryPageEscapeBound) {
             window.__countryPageEscapeBound = true;
             document.addEventListener('keydown', function(ev) {

@@ -2284,3 +2284,413 @@ body.page-country {
 .edit-mode-toggle[hidden] { display: none; }
 .overview-header .view-switch { margin: 0 0 0 auto; }
 .overview-header .edit-mode-toggle { margin: 0; }
+
+/* ===== Destinations submenu (nav) =====
+   The 7+ stops collapse into one "יעדים" item — see renderDestNav() in
+   js/main.js, which builds this markup on every page. */
+.nav-dest-group { position: relative; }
+
+.nav-dest-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font: inherit;
+    font-weight: 500;
+    color: #4a5568;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.nav-dest-toggle:hover { background: #edf2f7; color: var(--text); transform: translateY(-1px); }
+.nav-dest-toggle.active { background: var(--pink-gradient); color: var(--white); box-shadow: var(--shadow-btn); }
+
+.nav-dest-caret {
+    width: 0; height: 0;
+    border-inline-start: 4px solid transparent;
+    border-inline-end: 4px solid transparent;
+    border-top: 5px solid currentColor;
+    transition: transform 0.25s ease;
+}
+.nav-dest-group.is-open .nav-dest-caret { transform: rotate(180deg); }
+
+.nav-subnav {
+    list-style: none;
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    inset-inline-start: 0;
+    min-width: 190px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    padding: 0.4rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    z-index: 1001;
+}
+.nav-dest-group.is-open .nav-subnav { opacity: 1; visibility: visible; transform: translateY(0); }
+
+.nav-subnav a {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.nav-subnav__num {
+    flex: none;
+    width: 22px; height: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--teal-soft);
+    color: #1f6e5c;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.nav-subnav a.active .nav-subnav__num { background: rgba(255,255,255,0.35); color: var(--white); }
+
+@media (max-width: 768px) {
+    /* In the drawer the dropdown becomes a plain accordion — absolute
+       positioning would escape the panel. */
+    .nav-subnav {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        box-shadow: none;
+        background: rgba(0, 0, 0, 0.025);
+        max-height: 0;
+        overflow: hidden;
+        padding: 0 0.4rem;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+        margin-top: 0.35rem;
+    }
+    /* max-height needs a fixed length to transition to; 7 stops measure ~315px,
+       and a longer itinerary scrolls inside the panel rather than growing it. */
+    .nav-dest-group.is-open .nav-subnav { max-height: 480px; overflow-y: auto; padding: 0.4rem; }
+    .nav-dest-toggle { width: 100%; justify-content: space-between; padding: 0.75rem 1rem; }
+}
+
+/* ===== Recommendations toolbar (js/recs-enhance.js) ===== */
+.recs-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.recs-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.recs-search__icon {
+    position: absolute;
+    inset-inline-start: 0.85rem;
+    font-size: 0.95rem;
+    opacity: 0.6;
+    pointer-events: none;
+}
+.recs-search__input {
+    width: 100%;
+    font: inherit;
+    font-size: 0.95rem;
+    padding: 0.7rem 2.6rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.recs-search__input::-webkit-search-cancel-button { display: none; }
+.recs-search__input:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(136, 216, 192, 0.25);
+}
+.recs-search__clear {
+    position: absolute;
+    inset-inline-end: 0.6rem;
+    width: 26px; height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: #edf2f7;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    line-height: 1;
+}
+.recs-search__clear:hover { background: #e2e8f0; color: var(--text); }
+
+.recs-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+.recs-chip {
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 500;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.9);
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.recs-chip:hover { background: var(--white); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.recs-chip.is-active {
+    background: var(--pink-gradient);
+    border-color: transparent;
+    color: var(--white);
+    box-shadow: var(--shadow-btn);
+}
+/* Source chips keep each friend's own colour so they read as the same badge
+   that appears on the cards — see the attribution note in CLAUDE.md. */
+.recs-chip--src.rec-source--neta { background: var(--teal-soft); color: #1f6e5c; }
+.recs-chip--src.rec-source--roni { background: var(--purple-soft); color: #6b3fa0; }
+.recs-chip--src.is-active { background: var(--pink-gradient); color: var(--white); }
+
+.recs-count { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+.recs-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+}
+.recs-card[hidden], .recs-card li[hidden] { display: none; }
+
+/* Bold place names become Maps links */
+.rec-map-link {
+    display: inline;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px dashed rgba(44, 95, 141, 0.45);
+    transition: color 0.2s, border-color 0.2s;
+}
+.rec-map-link:hover { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+.rec-map-link__pin { font-size: 0.72em; margin-inline-start: 0.15em; opacity: 0.55; }
+.rec-map-link:hover .rec-map-link__pin { opacity: 1; }
+
+/* ===== Trip diary (js/diary.js) ===== */
+.diary-section { margin-top: 1.5rem; }
+.diary-header { display: flex; align-items: baseline; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.35rem; }
+.diary-header h2 { margin: 0; }
+.diary-count { font-size: 0.85rem; color: var(--text-muted); }
+.diary-intro { color: var(--text-muted); font-size: 0.93rem; margin-bottom: 1rem; }
+
+.diary-composer {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+.diary-composer.is-editing { box-shadow: 0 0 0 2px var(--teal), var(--shadow); }
+
+.diary-composer__row { display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap; }
+.diary-composer__label { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+
+.diary-authors { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.diary-author-btn {
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 500;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.9);
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.diary-author-btn:hover { transform: translateY(-1px); }
+.diary-author-btn--guy.is-active { background: var(--teal-soft); border-color: var(--teal); color: #1f6e5c; }
+.diary-author-btn--adi.is-active { background: var(--pink-soft); border-color: var(--pink); color: #a3455a; }
+.diary-author-btn--both.is-active { background: var(--purple-soft); border-color: #c3a8ff; color: #6b3fa0; }
+
+.diary-prompt {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    padding: 0.65rem 0.85rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 209, 220, 0.35), rgba(224, 247, 250, 0.45));
+    border: 1px dashed rgba(0, 0, 0, 0.1);
+}
+.diary-prompt__text { flex: 1; min-width: 12ch; font-size: 0.93rem; color: var(--text-muted); }
+.diary-prompt.is-filled .diary-prompt__text { color: var(--text); font-weight: 600; }
+.diary-prompt__btn {
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--white);
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.diary-prompt__btn:hover { transform: translateY(-1px); }
+.diary-prompt__clear {
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: 0.2rem;
+}
+
+.diary-textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.7;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text);
+    resize: vertical;
+    min-height: 120px;
+}
+.diary-textarea:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(136, 216, 192, 0.22);
+}
+
+.diary-moods { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.diary-mood-btn {
+    width: 36px; height: 36px;
+    display: grid;
+    place-items: center;
+    font-size: 1.05rem;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: rgba(0, 0, 0, 0.03);
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+.diary-mood-btn:hover { transform: scale(1.12); background: rgba(0,0,0,0.06); }
+.diary-mood-btn.is-active {
+    background: var(--pink-soft);
+    border-color: var(--pink);
+    transform: scale(1.12);
+}
+
+.diary-composer__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+.diary-composer__buttons { display: flex; gap: 0.5rem; margin-inline-start: auto; }
+.diary-date {
+    font: inherit;
+    font-size: 0.88rem;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text);
+}
+.diary-save-btn {
+    font: inherit;
+    font-size: 0.93rem;
+    font-weight: 600;
+    padding: 0.6rem 1.35rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--pink-gradient);
+    color: var(--white);
+    box-shadow: var(--shadow-btn);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.diary-save-btn:hover { transform: translateY(-2px); }
+.diary-cancel-btn {
+    font: inherit;
+    font-size: 0.9rem;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.diary-entries { display: flex; flex-direction: column; gap: 0.85rem; }
+
+.diary-entry {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 1rem 1.1rem;
+    border-inline-start: 4px solid var(--pink);
+}
+.diary-entry--guy { border-inline-start-color: var(--teal); }
+.diary-entry--adi { border-inline-start-color: var(--pink); }
+.diary-entry--both { border-inline-start-color: #c3a8ff; }
+
+.diary-entry__head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+.diary-entry__author { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+.diary-entry__date { font-size: 0.82rem; color: var(--text-muted); }
+.diary-entry__mood { font-size: 1.1rem; }
+.diary-entry__actions { display: flex; gap: 0.2rem; margin-inline-start: auto; }
+.diary-entry__btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.25rem 0.35rem;
+    border-radius: 8px;
+    opacity: 0.45;
+    transition: opacity 0.2s, background 0.2s;
+}
+.diary-entry__btn:hover { opacity: 1; background: rgba(0,0,0,0.05); }
+
+.diary-entry__prompt {
+    font-size: 0.85rem;
+    font-style: italic;
+    color: var(--text-muted);
+    padding-inline-start: 0.6rem;
+    border-inline-start: 2px solid rgba(0,0,0,0.1);
+    margin-bottom: 0.5rem;
+}
+.diary-entry__text { font-size: 1rem; line-height: 1.75; color: #4a5568; white-space: pre-wrap; }
+.diary-entry__edited { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; opacity: 0.7; }
+
+.diary-empty {
+    text-align: center;
+    padding: 2.25rem 1rem;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 18px;
+}
+.diary-empty__icon { font-size: 2.2rem; margin-bottom: 0.5rem; opacity: 0.85; }
+.diary-empty__title { font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+.diary-empty__text { font-size: 0.92rem; color: var(--text-muted); max-width: 42ch; margin: 0 auto; }
+
+@media (max-width: 600px) {
+    .diary-composer__actions { flex-direction: column; align-items: stretch; }
+    .diary-composer__buttons { margin-inline-start: 0; }
+    .diary-save-btn, .diary-cancel-btn { flex: 1; }
+    .diary-mood-btn { width: 32px; height: 32px; font-size: 0.95rem; }
+}

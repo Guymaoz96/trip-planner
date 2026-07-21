@@ -15,7 +15,7 @@ UI copy to English even when writing code/comments in English.
 - Do non-trivial work on a feature branch, verify in the browser preview,
   then merge to `main` and push only once it's checked. This is the
   established pattern from every past change to this repo.
-- Firestore rules on the Firebase project only allow six named collections
+- Firestore rules on the Firebase project only allow a fixed list of collections
   (see `references/firebase-setup.md`). **If you add a new Firestore
   collection, add its name to that rules list and tell the user to update
   it in the Firebase console** — writes to an unlisted collection fail
@@ -112,6 +112,40 @@ the cached `/index.html` for *any* failed navigation, which rendered the
 homepage under a `/pages/…` URL; markup-derived links then produced
 `/pages/pages/x.html` 404s. The fallback is now root-only, with an offline
 notice for uncached `/pages/` URLs.
+
+### Destination page surfaces (`pages/uluwatu.html` … + `pages/country.html`)
+
+All 8 destination pages share one structure, so page-level features live in
+shared modules rather than in 8 copies of markup:
+
+- `js/recs-enhance.js` upgrades the hand-authored `.recs-section` in place —
+  category chips, source chips, live search, and Google-Maps links on bold
+  place names. It derives everything from the existing classes
+  (`.recs-card.is-{food,info,stay}`, `.rec-source--<who>`), so **new
+  recommendation cards need those classes or they land in the default
+  "attractions" bucket and can't be filtered.** Filtering hides individual
+  `<li>`s, then hides any card left empty. Bold runs containing Hebrew
+  letters are treated as emphasis, not places, and stay unlinked.
+  `pages/country.html` builds its recs at runtime, so it dispatches a
+  `recsrendered` event that makes the module re-scan.
+- `js/diary.js` renders the narrative trip journal into `#diarySection`
+  (see below). Both scripts load after `main.js` on every destination page.
+- The day rail auto-opens day 1 on load (`openFirstDay()` in
+  `js/country-days.js`) — **desktop only**, since under 720px the detail pane
+  is a full-screen overlay that would bury the rail.
+- `renderDestNav()` collapses all destinations into one `יעדים` dropdown
+  (`li.nav-dest-group`) rather than listing them at the top level. It still
+  carries the `nav-dest` class so each re-render clears the previous one.
+
+### The trip diary
+
+`js/diary.js` is deliberately *not* the timeline: the timeline holds the plan
+for a day, the diary holds what the place felt like. Free text + who wrote it
+(גיא / עדי / שנינו) + an optional mood emoji + a rotating writing prompt.
+One Firestore doc per destination in the **`diary`** collection, keyed by
+destination id, with localStorage (`diary_<id>`) as the always-works path.
+Destination names are read from `tripData` at render time, so renaming a stop
+in the itinerary editor renames its diary too.
 
 ### Persistence pattern (reused everywhere: budget, todo, packing, timeline)
 

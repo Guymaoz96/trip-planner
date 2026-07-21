@@ -79,6 +79,8 @@
         <div id="photoWall"></div>
     </section>
 
+    <section class="container diary-section" id="diarySection"></section>
+
     <footer class="footer"><div class="container"><p>ירח דבש באינדונזיה · גיא &amp; עדי</p></div></footer>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -92,6 +94,8 @@
     <script src="../js/day-files.js"></script>
     <script src="../js/photos.js"></script>
     <script src="../js/ai-chat.js"></script>
+    <script src="../js/recs-enhance.js"></script>
+    <script src="../js/diary.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof initMobileMenu === 'function') initMobileMenu();
@@ -126,9 +130,11 @@
                         '</div>';
                 }).join('');
                 document.getElementById('recsPlaceholder').replaceWith(grid);
+                document.dispatchEvent(new CustomEvent('recsrendered'));
             }
 
             if (typeof initCountryPage === 'function') initCountryPage(country.id);
+            if (typeof initDiary === 'function') initDiary(country.id, country.name);
         });
     </script>
 </body>

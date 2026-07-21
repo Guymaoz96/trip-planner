@@ -296,21 +296,59 @@ function renderDestNav() {
         return params.get('id') || '';
     })();
 
+    /* Also clears the static <li class="nav-dest"> markup the pages ship with. */
     nav.querySelectorAll('li.nav-dest').forEach(function (li) { li.remove(); });
     const homeLi = homeLink ? homeLink.closest('li') : null;
-    const frag = document.createDocumentFragment();
-    tripData.countries.forEach(function (c) {
+
+    /* The 7+ destinations live in one collapsible "יעדים" group instead of
+       sitting at the top level — otherwise the mobile drawer is a 13-item
+       scroll. The group keeps the .nav-dest class so the line above still
+       cleans it up on the next re-render. */
+    const group = document.createElement('li');
+    group.className = 'nav-dest nav-dest-group';
+
+    const current = tripData.countries.find(function (c) { return c.id === currentId; });
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'nav-dest-toggle' + (current ? ' active' : '');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.innerHTML = '<span class="nav-dest-toggle__label"></span><span class="nav-dest-caret" aria-hidden="true"></span>';
+    toggle.querySelector('.nav-dest-toggle__label').textContent = current ? current.name : 'יעדים';
+
+    const sub = document.createElement('ul');
+    sub.className = 'nav-subnav';
+    tripData.countries.forEach(function (c, i) {
         const li = document.createElement('li');
-        li.className = 'nav-dest';
         const a = document.createElement('a');
         a.href = countryHref(c.id, pagesPrefix);
         if (c.id === currentId) a.className = 'active';
-        a.textContent = c.name;
+        /* The itinerary is ordered, so number the stops — it doubles as a
+           reminder of where each place falls in the trip. */
+        a.innerHTML = '<span class="nav-subnav__num"></span><span class="nav-subnav__name"></span>';
+        a.querySelector('.nav-subnav__num').textContent = i + 1;
+        a.querySelector('.nav-subnav__name').textContent = c.name;
         li.appendChild(a);
-        frag.appendChild(li);
+        sub.appendChild(li);
     });
-    if (homeLi && homeLi.nextSibling) homeLi.parentNode.insertBefore(frag, homeLi.nextSibling);
-    else nav.insertBefore(frag, nav.firstChild);
+
+    group.appendChild(toggle);
+    group.appendChild(sub);
+
+    toggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const open = group.classList.toggle('is-open');
+        toggle.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', function (e) {
+        if (group.classList.contains('is-open') && !group.contains(e.target)) {
+            group.classList.remove('is-open');
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    if (homeLi && homeLi.nextSibling) homeLi.parentNode.insertBefore(group, homeLi.nextSibling);
+    else if (homeLi) homeLi.parentNode.appendChild(group);
+    else nav.insertBefore(group, nav.firstChild);
 }
 
 /* Updates the homepage hero-dates/hero-subtitle and the "X ימים · Y יעדים"
