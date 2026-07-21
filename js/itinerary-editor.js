@@ -119,18 +119,31 @@
                     tripData.countries = doc.data().countries;
                     try { localStorage.setItem(LS_KEY, JSON.stringify({ countries: tripData.countries })); } catch (e) {}
                     notifyChange();
+                } else if (hasLocalOverride) {
+                    /* This browser holds an edited itinerary that never reached
+                       the cloud (early versions could fail the write silently),
+                       so nobody else ever saw it. Push it up once — from here on
+                       the doc exists and normal last-writer-wins applies. */
+                    saveOverride();
                 }
             }, function (err) { console.warn('itinerary load', err); });
         } catch (e) {}
     }
 
     function notifyChange() {
+        /* A cloud snapshot can land before the DOM exists (subscribeOverride now
+           runs at load on every page). The DOMContentLoaded pass below renders
+           from the already-updated tripData, so just skip the early dispatch. */
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', notifyChange, { once: true });
+            return;
+        }
         document.dispatchEvent(new CustomEvent('tripdatachange'));
     }
 
     /* Apply any saved override immediately (synchronous, top-level) so every
        script loaded after this one sees the corrected tripData.countries. */
-    loadOverrideFromLocalStorage();
+    var hasLocalOverride = loadOverrideFromLocalStorage();
 
     /* ---- editor UI — lives inside the existing #countryCards grid on the
        homepage. renderCountryCards() (js/main.js) always emits the order
@@ -335,7 +348,6 @@
         if (addBtn) addBtn.addEventListener('click', onAddDestSubmit);
 
         onAddDestChange();
-        subscribeOverride();
     }
 
     /* Every page (not just the homepage) needs nav to reflect the itinerary,
@@ -346,6 +358,12 @@
         if (typeof renderTripSummary === 'function') renderTripSummary();
         renderTotal();
     });
+
+    /* Cloud itinerary must be live on EVERY page, not just the homepage —
+       initItineraryEditor() returns early without #countryCards, so subscribing
+       from inside it left every pages/*.html reading only this browser's
+       localStorage (i.e. the hardcoded default on any other device). */
+    subscribeOverride();
 
     document.addEventListener('DOMContentLoaded', function () {
         if (typeof renderDestNav === 'function') renderDestNav();

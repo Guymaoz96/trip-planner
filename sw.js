@@ -1,5 +1,5 @@
 /* Bump CACHE (…-v1 → -v2 → …) whenever you change files, to invalidate old caches. */
-var CACHE = 'trip-v5';
+var CACHE = 'trip-v6';
 /* Core files to pre-cache for offline use. Add one line per country page. */
 var ASSETS = [
   '/index.html',
