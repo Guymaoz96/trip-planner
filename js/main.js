@@ -154,6 +154,14 @@ const tripData = {
    template instead. */
 const HANDWRITTEN_PAGES = ['uluwatu', 'rajaampat', 'sideman', 'gili', 'nusa', 'munduk', 'ubud'];
 
+/* '' when the current document is served from /pages/, 'pages/' at the root.
+   Every generated link must go through this — see the "Relative paths & the
+   service worker" note in CLAUDE.md for the 404 that markup-based detection
+   caused. */
+function sitePagesPrefix() {
+    return /\/pages\//.test((typeof location !== 'undefined' && location.pathname) || '') ? '' : 'pages/';
+}
+
 function countryHref(id, pagesPrefix) {
     var file = HANDWRITTEN_PAGES.indexOf(id) !== -1 ? (id + '.html') : ('country.html?id=' + encodeURIComponent(id));
     return pagesPrefix + file;
@@ -224,7 +232,7 @@ function renderCountryCards() {
         return (
             '<div class="country-card" data-idx="' + i + '">' +
             '<span class="country-card__order">' + (i + 1) + '</span>' +
-            '<a class="country-card__link" href="' + escapeHtml(countryHref(c.id, 'pages/')) + '">' +
+            '<a class="country-card__link" href="' + escapeHtml(countryHref(c.id, sitePagesPrefix())) + '">' +
             '<h3>' + escapeHtml(c.name) + '</h3>' +
             '<p class="country-card__meta">' + escapeHtml(metaLine) + '</p>' +
             introHtml +
@@ -280,7 +288,7 @@ function renderDestNav() {
     const nav = document.getElementById('navMenu');
     if (!nav || !tripData.countries) return;
     const homeLink = nav.querySelector('a[href="index.html"], a[href="../index.html"]');
-    const pagesPrefix = /\/pages\//.test(location.pathname) ? '' : 'pages/';
+    const pagesPrefix = sitePagesPrefix();
     const currentId = (function () {
         const m = /\/pages\/([a-z0-9-]+)\.html$/i.exec(location.pathname);
         if (m && HANDWRITTEN_PAGES.indexOf(m[1]) !== -1) return m[1];

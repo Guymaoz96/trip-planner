@@ -76,7 +76,10 @@
             var day = result.day;
             window.TIMELINE_DOC_ID = getDayDocId(country.id, week.weekNum, day.dayNum);
 
-            var countryPage = country.id + '.html';
+            /* countryHref(), not id + '.html': a destination added via the
+               itinerary editor has no hand-authored page and lives at
+               country.html?id=<id> (see HANDWRITTEN_PAGES in js/main.js). */
+            var countryPage = countryHref(country.id, sitePagesPrefix());
             document.getElementById('breadcrumb').innerHTML =
                 '<a href="../index.html">בית</a> ← <a href="' + countryPage + '">' + country.name + '</a> ← שבוע ' + week.weekNum + ' ← יום ' + day.dayNum;
             document.getElementById('dayTitle').textContent = country.name + ' – שבוע ' + week.weekNum + ' – יום ' + day.dayNum;

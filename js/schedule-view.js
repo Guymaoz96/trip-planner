@@ -113,7 +113,7 @@
         else if (info.isCheckIn) tag = 'צ׳ק-אין';
 
         return '<a class="sched-day sched-day--stay' + (isToday ? ' is-today' : '') + '"' +
-            ' href="' + esc(countryHref(info.country.id, 'pages/')) + '"' +
+            ' href="' + esc(countryHref(info.country.id, sitePagesPrefix())) + '"' +
             ' style="--dest-color:' + esc(color) + ';--dest-bg:' + esc(withAlpha(color, '2e')) + '"' +
             ' title="' + esc(info.label) + '">' +
             '<span class="sched-day__dow">' + dowLong + '</span>' +
@@ -134,7 +134,7 @@
             var outD = parseIso(checkoutDate(days[days.length - 1].date));
             var range = inD.getDate() + '.' + (inD.getMonth() + 1) + ' – ' + outD.getDate() + '.' + (outD.getMonth() + 1);
             var color = destColor(c.id, ci);
-            return '<a class="sched-legend__item" href="' + esc(countryHref(c.id, 'pages/')) + '"' +
+            return '<a class="sched-legend__item" href="' + esc(countryHref(c.id, sitePagesPrefix())) + '"' +
                 ' style="--dest-color:' + esc(color) + ';--dest-bg:' + esc(withAlpha(color, '2e')) + '">' +
                 '<span class="sched-legend__dot"></span>' +
                 '<span class="sched-legend__name">' + esc(c.name) + '</span>' +
