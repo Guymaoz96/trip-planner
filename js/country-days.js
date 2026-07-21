@@ -213,6 +213,7 @@
             '<div id="timelinePlaceholder"><p class="section-intro">אין עדיין פריטים. הפעילו מצב עריכה כדי להוסיף פעילויות.</p></div>' +
             '</div></div>' +
             '<div id="dayFilesMount" class="day-files-section"></div>' +
+            '<div id="dayDiaryMount" class="day-diary-section"></div>' +
             '</div>';
 
         window.__timelineScopeRoot = content;
@@ -236,6 +237,14 @@
 
         if (typeof window.initTimelinePanel === 'function') window.initTimelinePanel();
         if (typeof window.initDayFilesPanel === 'function') window.initDayFilesPanel(docId);
+        if (typeof window.initDayDiaryPanel === 'function') {
+            /* Short tag ("יום 3" / "ימים 3–5") — the destination diary shows it
+               as a badge so you can tell which day an entry came from. */
+            var dayTag = (isGroup && dayEndNum && parseInt(dayEndNum, 10) > day.dayNum)
+                ? 'ימים ' + day.dayNum + '–' + dayEndNum
+                : 'יום ' + day.dayNum;
+            window.initDayDiaryPanel(docId, country.id, dayTag, day.date || '');
+        }
 
         var backdrop = document.getElementById('countryDetailBackdrop');
         if (backdrop && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 720px)').matches) {

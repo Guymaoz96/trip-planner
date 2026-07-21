@@ -49,6 +49,7 @@
                 </div>
             </div>
             <div id="dayFilesMount" class="day-files-section"></div>
+            <div id="dayDiaryMount" class="day-diary-section"></div>
         </section>
     </main>
 
@@ -94,10 +95,16 @@
                 if (typeof window.initDayFilesPanel === 'function') {
                     window.initDayFilesPanel(window.TIMELINE_DOC_ID);
                 }
+                if (typeof window.initDayDiaryPanel === 'function') {
+                    window.initDayDiaryPanel(
+                        window.TIMELINE_DOC_ID, country.id, 'יום ' + day.dayNum, day.date || ''
+                    );
+                }
             });
         })();
     </script>
     <script src="../js/edit-mode.js"></script>
     <script src="../js/day-files.js"></script>
+    <script src="../js/diary.js"></script>
 </body>
 </html>

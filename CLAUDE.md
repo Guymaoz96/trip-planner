@@ -142,10 +142,23 @@ shared modules rather than in 8 copies of markup:
 `js/diary.js` is deliberately *not* the timeline: the timeline holds the plan
 for a day, the diary holds what the place felt like. Free text + who wrote it
 (גיא / עדי / שנינו) + an optional mood emoji + a rotating writing prompt.
-One Firestore doc per destination in the **`diary`** collection, keyed by
-destination id, with localStorage (`diary_<id>`) as the always-works path.
-Destination names are read from `tripData` at render time, so renaming a stop
-in the itinerary editor renames its diary too.
+
+**Two surfaces, one store.** `initDiary(countryId)` renders the whole diary for
+a destination into `#diarySection`; `initDayDiaryPanel(docId, countryId,
+dayTag, dayDate)` renders just one day's entries into `#dayDiaryMount`, which
+`openDayDetail()` adds under the timeline and files panels (and which
+`pages/day.html` mounts too). Both read and write **the same Firestore doc**
+`diary/<countryId>` — an entry written from a day just carries a `dayDocId`
+(the timeline's doc id, so merged day ranges work) plus a `dayLabel` the
+destination view shows as a badge. That means one listener per page instead of
+one per day, and the destination page tells the whole story of a place in one
+scroll. localStorage (`diary_<countryId>`) is the always-works path.
+
+Each mounted surface keeps its own composer draft, so typing in the day panel
+doesn't disturb the destination composer below it. Views whose root has left
+the DOM are pruned on every render — day panels are rebuilt each time the
+detail pane opens. Destination names come from `tripData` at render time, so
+renaming a stop in the itinerary editor renames its diary too.
 
 ### Persistence pattern (reused everywhere: budget, todo, packing, timeline)
 
