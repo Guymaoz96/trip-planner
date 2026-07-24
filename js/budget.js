@@ -59,10 +59,10 @@
         { id: 'g-cashew-0721', d: '2026-07-21', t: 'The Cashew Tree', c: 'אוכל', ils: 25.87, src: 'guy' },
         { id: 'g-drifter-0721', d: '2026-07-21', t: 'Drifter (בגדים)', c: 'קניות', ils: 42.61, src: 'guy' },
         { id: 'g-boxmart-0721', d: '2026-07-21', t: 'Box Mart Suluban (בירות וחטיפים)', c: 'אוכל', ils: 15.89, src: 'guy' },
-        { id: 'a-booking-0721', d: '2026-07-21', t: 'Booking.com – נוסה למבונגן', c: 'לינה', ils: 238.33, src: 'adi', dest: 'nusa', n: 2, sd: '2026-08-04' },
+        { id: 'a-booking-0721', d: '2026-07-21', t: 'Booking.com – נוסה למבונגן', c: 'לינה', ils: 238.33, src: 'adi', dest: 'nusa', n: 2, sd: '2026-07-24' },
         { id: 'a-yoga-0721', d: '2026-07-21', t: 'Alchemy Yoga Uluwatu', c: 'פעילויות', ils: 54.67, src: 'adi' },
         { id: 'a-dreamland-0721', d: '2026-07-21', t: 'Dreamland Beach', c: 'פעילויות', ils: 10.44, src: 'adi' },
-        { id: 'a-abnb-0721', d: '2026-07-21', t: 'Airbnb – נוסה פנידה', c: 'לינה', ils: 89.94, src: 'adi', dest: 'nusa', n: 2, sd: '2026-08-06' },
+        { id: 'a-abnb-0721', d: '2026-07-21', t: 'Airbnb – נוסה פנידה', c: 'לינה', ils: 89.94, src: 'adi', dest: 'nusa', n: 2, sd: '2026-07-26' },
         { id: 'g-localbrand-0722', d: '2026-07-22', t: 'The Local Brand', c: 'קניות', ils: 278.09, src: 'guy' },
         { id: 'g-balangan-0722', d: '2026-07-22', t: 'Balangan Wave (גלישה)', c: 'פעילויות', ils: 211.88, src: 'guy' },
         { id: 's-singlefin-0722', d: '2026-07-22', t: 'Single Fin (בר בשקיעה)', c: 'אוכל', ils: 57 },
@@ -593,7 +593,7 @@
         ranges.forEach(function (r) {
             if (!sums[r.name]) return;
             var d = daysIn(r);
-            var avg = d ? ' <span class="exp-dest-avg">· ' + fmtIls(sums[r.name] / d) + ' ליום (' + d + ' ימים)</span>' : '';
+            var avg = d ? ' <span class="exp-dest-avg">· ' + fmtIls(sums[r.name] / d) + ' ליום (' + (d === 1 ? 'יום 1' : d + ' ימים') + ')</span>' : '';
             html += '<div class="exp-dest-row"><span>' + esc(r.name) + avg + '</span><b>' + fmtIls(sums[r.name]) + '</b></div>';
         });
         if (sums['סוף הטיול']) {

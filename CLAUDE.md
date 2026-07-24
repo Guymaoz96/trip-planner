@@ -1,8 +1,17 @@
 # Indonesia Honeymoon Trip Site
 
 Static Hebrew (RTL) trip-planning PWA for Guy & Adi's honeymoon (19 Jul–14 Aug
-2026, Bali/Raja Ampat region). No build step — plain HTML/CSS/JS served as-is.
+2026, Bali region). No build step — plain HTML/CSS/JS served as-is.
 Deployed at Netlify, source at `github.com/Guymaoz96/trip-planner`.
+
+**Current itinerary (changed mid-trip, 25 Jul 2026 — Raja Ampat dropped,
+Lombok added):** Uluwatu 19–24.7 (5 nights) → Nusa 24–28.7 (4) → Sideman
+28–31.7 (3) → Gili Air 31.7–3.8 (3) → Lombok 3–9.8 (6) → Munduk 9–11.8 (2) →
+Ubud 11–14.8 (3), home 14.8. 26 nights / 27 days. The runtime source of truth
+is the itinerary override in Firestore `tripConfig/main` (edited via the
+homepage editor); `js/main.js` defaults were synced to this plan on 25.7 —
+if they diverge again, trust Firestore, then re-sync main.js.
+`pages/rajaampat.html` is orphaned (kept, harmless, not in tripData).
 
 **All user-facing text is Hebrew RTL.** Keep it that way — don't translate
 UI copy to English even when writing code/comments in English.

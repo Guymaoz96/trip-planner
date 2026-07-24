@@ -35,33 +35,25 @@ const tripData = {
                         { dayNum: 1, date: '2026-07-19', label: 'נחיתה בבאלי + הגעה לאולוואטו' },
                         { dayNum: 2, date: '2026-07-20', label: 'חופים: Dreamland / Balangan' },
                         { dayNum: 3, date: '2026-07-21', label: 'Melasti + מקדש אולוואטו לשקיעה' },
-                        { dayNum: 4, date: '2026-07-22', label: 'גלישה/צ׳יל + שוק Hatch בערב' }
+                        { dayNum: 4, date: '2026-07-22', label: 'גלישה/צ׳יל + שוק Hatch בערב' },
+                        { dayNum: 5, date: '2026-07-23', label: 'יום אחרון באולוואטו' }
                     ]
                 }
             ]
         },
         {
-            id: 'rajaampat',
-            name: 'ראג׳ה אמפט',
-            intro: 'גן עדן צלילה ושנורקל מרוחק — נופים בתוליים ומים צלולים. רוסטי ומזומן בלבד.',
+            id: 'nusa',
+            name: 'נוסה',
+            intro: 'נוסה למבונגן, פנידה וצ׳נינגן — מנטות, חופים דרמטיים וגשר צהוב.',
             weeks: [
                 {
                     weekNum: 1,
-                    label: 'מעבר + מיסול',
+                    label: 'נוסה',
                     days: [
-                        { dayNum: 1, date: '2026-07-23', label: 'טיסה לסורונג (עם קונקשן) + לינת מעבר' },
-                        { dayNum: 2, date: '2026-07-24', label: 'מעבורת/סירה למיסול — Yapap home stay' },
-                        { dayNum: 3, date: '2026-07-25', label: 'מיסול: שנורקל + נקודות תצפית' },
-                        { dayNum: 4, date: '2026-07-26', label: 'מיסול: לגונות וטיולי סירה' }
-                    ]
-                },
-                {
-                    weekNum: 2,
-                    label: 'מנסואר',
-                    days: [
-                        { dayNum: 5, date: '2026-07-27', label: 'מעבר למנסואר — Terimikhasi home stay' },
-                        { dayNum: 6, date: '2026-07-28', label: 'מנסואר: שנורקל + צבים בצד השני' },
-                        { dayNum: 7, date: '2026-07-29', label: 'מנסואר: צלילה/צ׳יל' }
+                        { dayNum: 1, date: '2026-07-24', label: 'מעבר מאולוואטו + מעבורת לנוסה למבונגן' },
+                        { dayNum: 2, date: '2026-07-25', label: 'צלילות/שנורקל: Manta Point + Crystal Bay' },
+                        { dayNum: 3, date: '2026-07-26', label: 'מעבר לנוסה פנידה' },
+                        { dayNum: 4, date: '2026-07-27', label: 'פנידה: Kelingking + Diamond Beach' }
                     ]
                 }
             ]
@@ -75,9 +67,9 @@ const tripData = {
                     weekNum: 1,
                     label: 'סידמן',
                     days: [
-                        { dayNum: 1, date: '2026-07-30', label: 'טיסה חזרה לבאלי + נסיעה לסידמן (Vishala)' },
-                        { dayNum: 2, date: '2026-07-31', label: 'טרסות אורז + מפל Gembleng באופנוע' },
-                        { dayNum: 3, date: '2026-08-01', label: 'סדנת בישול (Padarama) + צ׳יל בבריכה' }
+                        { dayNum: 1, date: '2026-07-28', label: 'מעבר מנוסה לסידמן (Vishala)' },
+                        { dayNum: 2, date: '2026-07-29', label: 'טרסות אורז + מפל Gembleng באופנוע' },
+                        { dayNum: 3, date: '2026-07-30', label: 'סדנת בישול (Padarama) + צ׳יל בבריכה' }
                     ]
                 }
             ]
@@ -91,25 +83,28 @@ const tripData = {
                     weekNum: 1,
                     label: 'גילי אייר',
                     days: [
-                        { dayNum: 1, date: '2026-08-02', label: 'מעבורת מ-Padangbai לגילי אייר (Villa Bagus)' },
-                        { dayNum: 2, date: '2026-08-03', label: 'שנורקל צבים (Biba Beach) + יוגה ב-H2O' }
+                        { dayNum: 1, date: '2026-07-31', label: 'מעבורת מסידמן לגילי אייר (Villa Bagus)' },
+                        { dayNum: 2, date: '2026-08-01', label: 'שנורקל צבים (Biba Beach) + יוגה ב-H2O' },
+                        { dayNum: 3, date: '2026-08-02', label: 'יום חופשי באי' }
                     ]
                 }
             ]
         },
         {
-            id: 'nusa',
-            name: 'נוסה',
-            intro: 'נוסה למבונגן, פנידה וצ׳נינגן — מנטות, חופים דרמטיים וגשר צהוב.',
+            id: 'lombok',
+            name: 'לומבוק',
+            intro: 'האי השכן הפראי — חופים ריקים, גלישה בקוטה לומבוק ומפלים בפנים האי.',
             weeks: [
                 {
                     weekNum: 1,
-                    label: 'נוסה למבונגן',
+                    label: 'לומבוק',
                     days: [
-                        { dayNum: 1, date: '2026-08-04', label: 'מעבורת לנוסה למבונגן (Su Casa)' },
-                        { dayNum: 2, date: '2026-08-05', label: 'יום צלילות: Manta Point + Crystal Bay (Sober)' },
-                        { dayNum: 3, date: '2026-08-06', label: 'טיול יום לנוסה פנידה עם קומאנג' },
-                        { dayNum: 4, date: '2026-08-07', label: 'צ׳נינגן: Yellow Bridge + Secret Beach + ARNA' }
+                        { dayNum: 1, date: '2026-08-03', label: 'מעבר מגילי אייר ללומבוק' },
+                        { dayNum: 2, date: '2026-08-04', label: 'חופים: Selong Belanak / Tanjung Aan' },
+                        { dayNum: 3, date: '2026-08-05', label: 'גלישה/צ׳יל בקוטה לומבוק' },
+                        { dayNum: 4, date: '2026-08-06', label: 'מפלים בפנים האי' },
+                        { dayNum: 5, date: '2026-08-07', label: 'יום חופשי' },
+                        { dayNum: 6, date: '2026-08-08', label: 'יום אחרון בלומבוק' }
                     ]
                 }
             ]
@@ -123,8 +118,8 @@ const tripData = {
                     weekNum: 1,
                     label: 'מונדוק',
                     days: [
-                        { dayNum: 1, date: '2026-08-08', label: 'מעבורת ל-Sanur + נסיעה למונדוק (Munduk Cabins)' },
-                        { dayNum: 2, date: '2026-08-09', label: 'מקדש Ulun Danu + מפל Banyumala + Munduk Escape' }
+                        { dayNum: 1, date: '2026-08-09', label: 'חזרה לבאלי + נסיעה למונדוק (Munduk Cabins)' },
+                        { dayNum: 2, date: '2026-08-10', label: 'מקדש Ulun Danu + מפל Banyumala + Munduk Escape' }
                     ]
                 }
             ]
@@ -138,10 +133,9 @@ const tripData = {
                     weekNum: 1,
                     label: 'אובוד',
                     days: [
-                        { dayNum: 1, date: '2026-08-10', label: 'נסיעה לאובוד — Art Market + Ubud Palace' },
-                        { dayNum: 2, date: '2026-08-11', label: 'Pyramids of Chi (sound healing) + Tropical' },
-                        { dayNum: 3, date: '2026-08-12', label: 'מעבר ל-Kayon Jungle Resort + Cretya' },
-                        { dayNum: 4, date: '2026-08-13', label: 'זריחה בהר בטור + מעיינות חמים · טיסה הביתה למחרת' }
+                        { dayNum: 1, date: '2026-08-11', label: 'נסיעה לאובוד — Art Market + Ubud Palace' },
+                        { dayNum: 2, date: '2026-08-12', label: 'Pyramids of Chi (sound healing) + Tropical' },
+                        { dayNum: 3, date: '2026-08-13', label: 'Kayon Jungle Resort + זריחה בבטור · טיסה הביתה למחרת' }
                     ]
                 }
             ]
