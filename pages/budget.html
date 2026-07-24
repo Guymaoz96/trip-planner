@@ -36,31 +36,34 @@
 
     <main class="container">
         <h1 class="page-title">הוצאות הטיול</h1>
-        <p class="section-intro">כל הוצאה נשמרת אוטומטית ומסתנכרנת בין הטלפונים. מזומן — רושמים רק משיכות והמרות (🏧), לא כל קנייה קטנה.</p>
+        <p class="section-intro">רושמים כל הוצאה — והדף מסכם לבד. הכל נשמר ומסתנכרן בין הטלפונים.</p>
 
         <div class="exp-summary">
-            <div class="budget-sum-card">
-                <div class="budget-sum-label">סה״כ הטיול</div>
+            <div class="budget-sum-card exp-sum-btn" data-x="total">
+                <div class="budget-sum-label">💰 שולם עד עכשיו</div>
                 <div class="budget-sum-value" id="expSumTotal">—</div>
+                <div class="exp-sum-note">כולל טיסות והזמנות מראש</div>
+                <div class="exp-sum-how">איך חושב? ⌄</div>
             </div>
-            <div class="budget-sum-card">
-                <div class="budget-sum-label">בלי טיסות</div>
-                <div class="budget-sum-value" id="expSumNoFl">—</div>
-            </div>
-            <div class="budget-sum-card">
-                <div class="budget-sum-label">ממוצע יומי</div>
+            <div class="budget-sum-card exp-sum-btn" data-x="daily">
+                <div class="budget-sum-label">📅 עולה לנו ליום</div>
                 <div class="budget-sum-value" id="expSumDaily">—</div>
                 <div class="exp-sum-note" id="expSumDailyNote"></div>
+                <div class="exp-sum-how">איך חושב? ⌄</div>
             </div>
-            <div class="budget-sum-card exp-est-card">
-                <div class="budget-sum-label">אומדן לסוף הטיול</div>
+            <div class="budget-sum-card exp-est-card exp-sum-btn" data-x="est">
+                <div class="budget-sum-label">🔮 צפי לסוף הטיול</div>
                 <div class="budget-sum-value" id="expSumEst">—</div>
                 <div class="exp-sum-note" id="expSumEstNote"></div>
+                <div class="exp-sum-how">איך חושב? ⌄</div>
             </div>
         </div>
+        <div id="expExplain" class="exp-explain" hidden></div>
+        <div class="exp-updated" id="expUpdated"></div>
 
         <div class="overview exp-add-card">
             <div class="exp-h2">הוספה מהירה</div>
+            <p class="exp-hint">מזומן: רושמים רק משיכות והמרות (🏧), לא כל קנייה קטנה — ככה כלום לא נספר פעמיים.</p>
             <div class="exp-amount-row">
                 <div id="expCurBtns" class="exp-cur-btns"></div>
                 <input type="number" id="expAmount" inputmode="decimal" min="0" placeholder="סכום">
@@ -85,6 +88,7 @@
             <div class="exp-h2">לפי קטגוריה</div>
             <div id="expCatBars"></div>
             <div class="exp-h2" style="margin-top:1.1rem">לפי יעד</div>
+            <p class="exp-hint">לינה נספרת לפי תאריכי השהייה, גם אם שולמה מראש.</p>
             <div id="expDestRows" class="exp-dest-rows"></div>
         </div>
 

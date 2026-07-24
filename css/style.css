@@ -2987,3 +2987,45 @@ body.page-country {
     font-size: 0.85rem;
 }
 #expNights { width: 70px; text-align: center; }
+
+/* clickable summary cards + explanation panel */
+.exp-summary { grid-template-columns: repeat(3, 1fr); margin-bottom: 0.5rem; }
+@media (max-width: 640px) {
+    .exp-summary { grid-template-columns: repeat(2, 1fr); }
+    .exp-summary .exp-est-card { grid-column: span 2; }
+}
+.exp-sum-btn { cursor: pointer; border: 2px solid transparent; transition: border-color 0.15s; }
+.exp-sum-btn:hover { border-color: #cfe3e3; }
+.exp-sum-btn.exp-sum-open { border-color: var(--accent-color); }
+.exp-sum-how { font-size: 0.68rem; color: var(--accent-color); font-weight: 700; margin-top: 0.3rem; }
+.exp-explain {
+    background: var(--white);
+    border: 2px solid var(--accent-color);
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.6rem;
+    box-shadow: var(--shadow);
+}
+.exp-x-title { font-weight: 700; color: var(--text); margin-bottom: 0.6rem; font-size: 0.95rem; }
+.exp-x-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.7rem;
+    font-size: 0.86rem;
+    color: var(--text);
+    padding: 0.28rem 0;
+    border-bottom: 1px dashed #e8edf3;
+}
+.exp-x-row:last-of-type { border-bottom: none; }
+.exp-x-row b { white-space: nowrap; }
+.exp-x-sum { font-weight: 700; border-top: 1.5px solid #d7dee8; }
+.exp-x-result { font-weight: 700; color: var(--accent-color); font-size: 0.95rem; }
+.exp-x-result b { color: var(--accent-color); }
+.exp-x-note { font-size: 0.76rem; color: var(--text-muted); margin-top: 0.55rem; line-height: 1.5; }
+.exp-updated {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}

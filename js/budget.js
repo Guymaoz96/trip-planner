@@ -59,17 +59,17 @@
         { id: 'g-cashew-0721', d: '2026-07-21', t: 'The Cashew Tree', c: 'אוכל', ils: 25.87, src: 'guy' },
         { id: 'g-drifter-0721', d: '2026-07-21', t: 'Drifter (בגדים)', c: 'קניות', ils: 42.61, src: 'guy' },
         { id: 'g-boxmart-0721', d: '2026-07-21', t: 'Box Mart Suluban (בירות וחטיפים)', c: 'אוכל', ils: 15.89, src: 'guy' },
-        { id: 'a-booking-0721', d: '2026-07-21', t: 'Booking.com – מלון', c: 'לינה', ils: 238.33, src: 'adi' },
+        { id: 'a-booking-0721', d: '2026-07-21', t: 'Booking.com – נוסה למבונגן', c: 'לינה', ils: 238.33, src: 'adi', dest: 'nusa', n: 2, sd: '2026-08-04' },
         { id: 'a-yoga-0721', d: '2026-07-21', t: 'Alchemy Yoga Uluwatu', c: 'פעילויות', ils: 54.67, src: 'adi' },
         { id: 'a-dreamland-0721', d: '2026-07-21', t: 'Dreamland Beach', c: 'פעילויות', ils: 10.44, src: 'adi' },
-        { id: 'a-abnb-0721', d: '2026-07-21', t: 'Airbnb', c: 'לינה', ils: 89.94, src: 'adi' },
+        { id: 'a-abnb-0721', d: '2026-07-21', t: 'Airbnb – נוסה פנידה', c: 'לינה', ils: 89.94, src: 'adi', dest: 'nusa', n: 2, sd: '2026-08-06' },
         { id: 'g-localbrand-0722', d: '2026-07-22', t: 'The Local Brand', c: 'קניות', ils: 278.09, src: 'guy' },
         { id: 'g-balangan-0722', d: '2026-07-22', t: 'Balangan Wave (גלישה)', c: 'פעילויות', ils: 211.88, src: 'guy' },
         { id: 's-singlefin-0722', d: '2026-07-22', t: 'Single Fin (בר בשקיעה)', c: 'אוכל', ils: 57 },
         { id: 's-terrazza-0722', d: '2026-07-22', t: 'La Terrazza (קוקטיילים)', c: 'אוכל', ils: 60 }
     ];
 
-    var state = { items: [], rates: null, cur: 'IDR', cat: 'אוכל', editId: null, filter: { q: '', cat: '', dest: '' } };
+    var state = { items: [], rates: null, cur: 'IDR', cat: 'אוכל', editId: null, explain: '', filter: { q: '', cat: '', dest: '' } };
 
     function esc(s) {
         var d = document.createElement('div');
@@ -412,47 +412,66 @@
     }
 
     /* ---- summaries ---- */
-    function renderSummary() {
-        var total = 0, noFlights = 0, lastDate = '';
+    var SHOP_CAT = 'קניות';
+    function computeCalc() {
         var start = tripStart();
+        var today = todayStr();
+        var c = { start: start, today: today };
+
+        /* buckets for the "total" breakdown */
+        var b = { flights: 0, insurance: 0, lodging: 0, cash: 0, rest: 0 };
+        var total = 0, lastDate = '';
         state.items.forEach(function (i) {
             var v = parseFloat(i.ils) || 0;
             total += v;
-            if (i.c !== 'טיסות') noFlights += v;
-            /* the window's end date is set by regular (non-prorated) on-trip
-               expenses — prorated lodging follows the window, not the other
-               way around */
+            if (i.c === 'טיסות') b.flights += v;
+            else if (i.c === 'ביטוח ומסמכים') b.insurance += v;
+            else if (i.c === 'לינה') b.lodging += v;
+            else if (i.c === 'מזומן') b.cash += v;
+            else b.rest += v;
             if (i.d >= start && !FIXED_CATS[i.c] && !(parseInt(i.n, 10) > 1)) {
                 if (i.d > lastDate) lastDate = i.d;
             }
         });
-        /* Days are counted up to the LAST recorded expense, not up to today —
-           the card app updates with a delay, so dividing by "today" would
-           understate the average. Capped at today. */
-        var upTo = lastDate || start;
-        var today = todayStr();
-        if (upTo > today) upTo = today;
-        var days = Math.max(1, diffDays(start, upTo) + 1);
+        c.total = total;
+        c.buckets = b;
+        c.noFlights = total - b.flights;
 
-        /* on-trip spend inside the window: full amount for regular expenses,
-           per-night share for prorated lodging */
-        var onTrip = 0;
+        var upTo = lastDate || start;
+        if (upTo > today) upTo = today;
+        c.upTo = upTo;
+        c.days = Math.max(1, diffDays(start, upTo) + 1);
+
+        /* window spend: regular expenses in full + lodging per night */
+        var regular = 0, regularShop = 0, lodgingShare = 0, lodgingNights = 0;
         state.items.forEach(function (i) {
             if (FIXED_CATS[i.c]) return;
             var share = proratedShare(i, start, upTo);
-            if (share !== null) { onTrip += share; return; }
-            if (i.d >= start && i.d <= upTo) onTrip += parseFloat(i.ils) || 0;
+            if (share !== null) {
+                lodgingShare += share;
+                var n = parseInt(i.n, 10);
+                if (share > 0) lodgingNights += Math.round(share / ((parseFloat(i.ils) || 0) / n));
+                return;
+            }
+            if (i.d >= start && i.d <= upTo) {
+                var v = parseFloat(i.ils) || 0;
+                regular += v;
+                if (i.c === SHOP_CAT) regularShop += v;
+            }
         });
-        var daily = onTrip / days;
+        c.regular = regular;
+        c.shop = regularShop;
+        c.lodgingShare = lodgingShare;
+        c.lodgingNights = lodgingNights;
+        c.onTrip = regular + lodgingShare;
+        c.daily = c.onTrip / c.days;
+        c.dailyNoShop = (c.onTrip - regularShop) / c.days;
 
-        /* End-of-trip estimate: everything already recorded + the same daily
-           run-rate for the remaining days of the trip */
+        /* estimate */
         var ranges = tripRanges();
         var lastNight = ranges.length ? ranges[ranges.length - 1].last : start;
-        var tripDays = Math.max(1, Math.round((new Date(lastNight + 'T00:00:00') - new Date(start + 'T00:00:00')) / 86400000) + 2); /* +1 checkout day */
-        var remaining = Math.max(0, tripDays - days);
-        /* lodging nights already paid for dates beyond the window are inside
-           `total`, so don't charge those days again at the daily rate */
+        c.tripDays = Math.max(1, diffDays(start, lastNight) + 2); /* +1 checkout day */
+        c.remaining = Math.max(0, c.tripDays - c.days);
         var prepaidAhead = 0;
         state.items.forEach(function (i) {
             var n = parseInt(i.n, 10);
@@ -460,15 +479,73 @@
             var share = proratedShare(i, start, upTo);
             prepaidAhead += (parseFloat(i.ils) || 0) - (share || 0);
         });
-        var estimate = total + Math.max(0, daily * remaining - prepaidAhead);
+        c.prepaidAhead = prepaidAhead;
+        c.estimate = total + Math.max(0, c.daily * c.remaining - prepaidAhead);
+        return c;
+    }
 
+    function fmtD(d) {
+        var p = d.split('-');
+        return parseInt(p[2], 10) + '.' + parseInt(p[1], 10);
+    }
+    function explainHtml(which, c) {
+        function row(label, val, cls) {
+            return '<div class="exp-x-row' + (cls ? ' ' + cls : '') + '"><span>' + label + '</span><b>' + val + '</b></div>';
+        }
+        if (which === 'total') {
+            return '<div class="exp-x-title">💰 כמה שילמנו עד עכשיו — פשוט הכל ביחד</div>' +
+                row('✈️ טיסות (שולם מראש)', fmtIls(c.buckets.flights)) +
+                row('📄 ביטוחים וויזה', fmtIls(c.buckets.insurance)) +
+                row('🏨 לינה (כולל הזמנות מראש)', fmtIls(c.buckets.lodging)) +
+                row('🏧 מזומן שמשכנו/המרנו', fmtIls(c.buckets.cash)) +
+                row('🍜 כל השאר (אוכל, פעילויות, קניות...)', fmtIls(c.buckets.rest)) +
+                row('סה״כ', fmtIls(c.total), 'exp-x-sum') +
+                row('אותו סכום בלי הטיסות', fmtIls(c.noFlights)) +
+                '<div class="exp-x-note">כל שורה שרשומה בדף הזה נספרת כאן פעם אחת, בלי חישובים מיוחדים.</div>';
+        }
+        if (which === 'daily') {
+            return '<div class="exp-x-title">📅 כמה עולה לנו יום בטיול</div>' +
+                '<div class="exp-x-note">מחושב על ' + c.days + ' ימים: מ־' + fmtD(c.start) + ' (תחילת הטיול) עד ' + fmtD(c.upTo) + ' — היום האחרון שיש עליו נתונים. האשראי מתעדכן באיחור של כמה ימים, אז לא סופרים ימים שעוד אין להם נתונים.</div>' +
+                row('הוצאות בשטח (אוכל, פעילויות, קניות, מזומן...)', fmtIls(c.regular)) +
+                row('לינה — רק הלילות שכבר ישנו (' + c.lodgingNights + ' לילות)', fmtIls(c.lodgingShare)) +
+                row('ביחד', fmtIls(c.onTrip), 'exp-x-sum') +
+                row('לחלק ל־' + c.days + ' ימים', fmtIls(c.daily) + ' ליום', 'exp-x-result') +
+                row('ואם מורידים את הקניות (דברים הביתה)', fmtIls(c.dailyNoShop) + ' ליום') +
+                '<div class="exp-x-note">לא נכנסים לממוצע: טיסות, ביטוחים וויזה (שולמו מראש, לא הוצאה יומית) ולינה ששולמה ללילות שעוד לא הגיעו — היא תיכנס בדיוק בימים של השהייה עצמה.</div>';
+        }
+        return '<div class="exp-x-title">🔮 כמה הטיול צפוי לעלות בסוף</div>' +
+            row('מה שכבר שולם', fmtIls(c.total)) +
+            row('+ עוד ' + c.remaining + ' ימים שנשארו × ' + fmtIls(c.daily) + ' ליום', fmtIls(c.daily * c.remaining)) +
+            row('- לינה לימים הבאים שכבר שילמנו עליה', '-' + fmtIls(c.prepaidAhead)) +
+            row('צפי לסוף הטיול', fmtIls(c.estimate), 'exp-x-result') +
+            '<div class="exp-x-note">ההנחה: נמשיך להוציא באותו קצב יומי. כל עדכון של הוצאות מדייק את הצפי.</div>';
+    }
+
+    function renderSummary() {
+        var c = computeCalc();
         var el;
-        if ((el = document.getElementById('expSumTotal'))) el.textContent = fmtIls(total);
-        if ((el = document.getElementById('expSumNoFl'))) el.textContent = fmtIls(noFlights);
-        if ((el = document.getElementById('expSumDaily'))) el.textContent = fmtIls(daily);
-        if ((el = document.getElementById('expSumDailyNote'))) el.textContent = 'לפי ' + days + ' ימים (עד ההוצאה האחרונה), בלי טיסות וביטוחים';
-        if ((el = document.getElementById('expSumEst'))) el.textContent = fmtIls(estimate);
-        if ((el = document.getElementById('expSumEstNote'))) el.textContent = 'אם נמשיך באותו קצב עוד ' + remaining + ' ימים';
+        if ((el = document.getElementById('expSumTotal'))) el.textContent = fmtIls(c.total);
+        if ((el = document.getElementById('expSumDaily'))) el.textContent = fmtIls(c.daily);
+        if ((el = document.getElementById('expSumDailyNote'))) el.textContent = 'בלי קניות: ' + fmtIls(c.dailyNoShop);
+        if ((el = document.getElementById('expSumEst'))) el.textContent = fmtIls(c.estimate);
+        if ((el = document.getElementById('expSumEstNote'))) el.textContent = 'אם נמשיך באותו קצב';
+        if ((el = document.getElementById('expUpdated'))) {
+            el.textContent = 'מעודכן עד ' + fmtD(c.upTo) + ' (' + c.days + ' ימי טיול) · האשראי מתעדכן באיחור של כמה ימים';
+        }
+        /* explanation panel */
+        var panel = document.getElementById('expExplain');
+        if (panel) {
+            if (state.explain) {
+                panel.hidden = false;
+                panel.innerHTML = explainHtml(state.explain, c);
+            } else {
+                panel.hidden = true;
+                panel.innerHTML = '';
+            }
+        }
+        document.querySelectorAll('.exp-sum-btn').forEach(function (card) {
+            card.classList.toggle('exp-sum-open', card.getAttribute('data-x') === state.explain);
+        });
     }
     function renderCatBars() {
         var el = document.getElementById('expCatBars');
@@ -688,6 +765,13 @@
         if (addBtn) addBtn.addEventListener('click', addExpense);
         var descEl = document.getElementById('expDesc');
         if (descEl) descEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') addExpense(); });
+        document.querySelectorAll('.exp-sum-btn').forEach(function (card) {
+            card.addEventListener('click', function () {
+                var x = card.getAttribute('data-x');
+                state.explain = state.explain === x ? '' : x;
+                renderSummary();
+            });
+        });
         var fq = document.getElementById('expFilterQ');
         if (fq) fq.addEventListener('input', function () { state.filter.q = fq.value.trim(); renderList(); });
         var fc = document.getElementById('expFilterCat');
