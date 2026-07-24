@@ -344,12 +344,15 @@
             if (msg) msg.textContent = 'פורמט לא תקין — מדביקים את הרשימה שקלוד שלח, כמו שהיא.';
             return;
         }
-        var have = {};
-        state.items.forEach(function (i) { have[i.id] = 1; });
-        var added = 0, skipped = 0;
+        /* upsert: a known id UPDATES the existing row (so Claude can send
+           corrections, not only additions); an identical row counts as
+           unchanged; a new id is added */
+        var idx = {};
+        state.items.forEach(function (i, k) { idx[i.id] = k; });
+        var added = 0, updated = 0, same = 0, bad = 0;
         var items = state.items.slice();
         data.forEach(function (raw) {
-            if (!raw || !raw.d || !raw.t || typeof raw.ils !== 'number') { skipped++; return; }
+            if (!raw || !raw.d || !raw.t || typeof raw.ils !== 'number') { bad++; return; }
             var item = { d: raw.d, t: raw.t, c: raw.c || 'אחר', ils: raw.ils };
             if (raw.amt) item.amt = raw.amt;
             if (raw.cur) item.cur = raw.cur;
@@ -358,13 +361,25 @@
             if (raw.n) item.n = raw.n;
             if (raw.sd) item.sd = raw.sd;
             item.id = raw.id || newId(item);
-            if (have[item.id]) { skipped++; return; }
-            have[item.id] = 1;
+            if (item.id in idx) {
+                if (JSON.stringify(items[idx[item.id]]) === JSON.stringify(item)) { same++; return; }
+                items[idx[item.id]] = item;
+                updated++;
+                return;
+            }
+            idx[item.id] = items.length;
             items.push(item);
             added++;
         });
         setItems(items);
-        if (msg) msg.textContent = 'נוספו ' + added + (skipped ? ' · דולגו ' + skipped + ' (כפולים/שגויים)' : '');
+        if (msg) {
+            var parts = [];
+            if (added) parts.push('נוספו ' + added);
+            if (updated) parts.push('עודכנו ' + updated);
+            if (same) parts.push(same + ' ללא שינוי');
+            if (bad) parts.push(bad + ' שגויים');
+            msg.textContent = parts.join(' · ') || 'לא היה מה לעדכן';
+        }
         ta.value = '';
     }
     function exportJson() {
