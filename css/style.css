@@ -2938,3 +2938,26 @@ body.page-country {
 .exp-tools-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 .exp-tools-actions button { padding: 0.45rem 0.9rem; font-size: 0.85rem; }
 #expExportBtn, #expCsvBtn { background: var(--primary-color); }
+
+/* expense log additions: estimate card + filters */
+.exp-summary { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 640px) { .exp-summary { grid-template-columns: repeat(2, 1fr); } }
+.exp-est-card { background: #eef7f7; }
+.exp-filters {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 0.7rem;
+}
+.exp-filters input[type="search"], .exp-filters select {
+    border: 1.5px solid #d7dee8;
+    border-radius: 10px;
+    padding: 0.4rem 0.6rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: var(--text);
+    background: var(--white);
+}
+.exp-filters input[type="search"] { flex: 1; min-width: 110px; }
+.exp-filter-sum { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }

@@ -46,10 +46,10 @@
         { id: 's-fl-adi2', d: '2026-07-01', t: 'טיסה עדי אינדונזיה–אתונה', c: 'טיסות', ils: 1648 },
         { id: 's-fl-ath', d: '2026-07-01', t: 'טיסה אתונה–רודוס', c: 'טיסות', ils: 356 },
         { id: 's-fl-rho', d: '2026-07-01', t: 'טיסה רודוס–תל אביב', c: 'טיסות', ils: 880 },
-        { id: 's-ins-guy', d: '2026-07-15', t: 'ביטוח נסיעות – גיא', c: 'ביטוח ומסמכים', ils: 576 },
-        { id: 's-visa', d: '2026-07-10', t: 'ויזה מראש (נגנבה, לא נוצלה)', c: 'ביטוח ומסמכים', ils: 375 },
-        { id: 's-abnb-0716', d: '2026-07-16', t: 'Airbnb – הזמנה מראש', c: 'לינה', ils: 1471.9, src: 'adi' },
-        { id: 's-ins-adi', d: '2026-07-19', t: 'ביטוח נסיעות הראל – עדי', c: 'ביטוח ומסמכים', ils: 259.25, src: 'adi' },
+        { id: 's-ins-guy', d: '2026-07-15', t: 'ביטוח נסיעות – גיא', c: 'ביטוח ומסמכים', ils: 576, dest: 'pre' },
+        { id: 's-visa', d: '2026-07-10', t: 'ויזה מראש (נגנבה, לא נוצלה)', c: 'ביטוח ומסמכים', ils: 375, dest: 'pre' },
+        { id: 's-abnb-0716', d: '2026-07-16', t: 'Airbnb – לינה באולוואטו', c: 'לינה', ils: 1471.9, src: 'adi', dest: 'uluwatu' },
+        { id: 's-ins-adi', d: '2026-07-19', t: 'ביטוח נסיעות הראל – עדי', c: 'ביטוח ומסמכים', ils: 259.25, src: 'adi', dest: 'pre' },
         { id: 's-sim-guy', d: '2026-07-19', t: 'סים לגיא', c: 'אחר', ils: 26 },
         { id: 's-fx-usd', d: '2026-07-19', t: 'המרת 300$ בשדה (שער יקר)', c: 'מזומן', ils: 956, amt: 300, cur: 'USD' },
         { id: 'g-laggas-0720', d: '2026-07-20', t: 'Laggas Uluwatu', c: 'אוכל', ils: 75.31, src: 'guy' },
@@ -64,10 +64,12 @@
         { id: 'a-dreamland-0721', d: '2026-07-21', t: 'Dreamland Beach', c: 'פעילויות', ils: 10.44, src: 'adi' },
         { id: 'a-abnb-0721', d: '2026-07-21', t: 'Airbnb', c: 'לינה', ils: 89.94, src: 'adi' },
         { id: 'g-localbrand-0722', d: '2026-07-22', t: 'The Local Brand', c: 'קניות', ils: 278.09, src: 'guy' },
-        { id: 'g-balangan-0722', d: '2026-07-22', t: 'Balangan Wave (גלישה)', c: 'פעילויות', ils: 211.88, src: 'guy' }
+        { id: 'g-balangan-0722', d: '2026-07-22', t: 'Balangan Wave (גלישה)', c: 'פעילויות', ils: 211.88, src: 'guy' },
+        { id: 's-singlefin-0722', d: '2026-07-22', t: 'Single Fin (בר בשקיעה)', c: 'אוכל', ils: 57 },
+        { id: 's-terrazza-0722', d: '2026-07-22', t: 'La Terrazza (קוקטיילים)', c: 'אוכל', ils: 60 }
     ];
 
-    var state = { items: [], rates: null, cur: 'IDR', cat: 'אוכל', editId: null };
+    var state = { items: [], rates: null, cur: 'IDR', cat: 'אוכל', editId: null, filter: { q: '', cat: '', dest: '' } };
 
     function esc(s) {
         var d = document.createElement('div');
@@ -106,9 +108,17 @@
         var r = tripRanges();
         return (r[0] && r[0].first) || '2026-07-19';
     }
-    function destFor(dateStr) {
+    function destFor(item) {
         var ranges = tripRanges();
         if (!ranges.length) return '';
+        /* explicit override wins: dest:'pre', dest:'end', or a country id —
+           e.g. lodging paid before the trip that belongs to a destination */
+        if (item.dest) {
+            if (item.dest === 'pre') return 'לפני הטיול';
+            if (item.dest === 'end') return 'סוף הטיול';
+            for (var j = 0; j < ranges.length; j++) if (ranges[j].id === item.dest) return ranges[j].name;
+        }
+        var dateStr = item.d;
         if (dateStr < ranges[0].first) return 'לפני הטיול';
         for (var i = 0; i < ranges.length; i++) {
             var next = ranges[i + 1];
@@ -116,6 +126,8 @@
         }
         return 'סוף הטיול';
     }
+    /* Fixed pre-trip costs: not part of the daily run-rate (like flights) */
+    var FIXED_CATS = { 'טיסות': 1, 'ביטוח ומסמכים': 1 };
 
     /* ---- persistence (site pattern: LS first, Firestore preferred) ---- */
     function saveLs(items) {
@@ -347,24 +359,37 @@
             var v = parseFloat(i.ils) || 0;
             total += v;
             if (i.c !== 'טיסות') noFlights += v;
-            if (i.d >= start && i.c !== 'טיסות') {
+            /* daily run-rate: on-trip spending, excluding fixed pre-trip costs
+               (flights + insurance/documents) */
+            if (i.d >= start && !FIXED_CATS[i.c]) {
                 onTrip += v;
                 if (i.d > lastDate) lastDate = i.d;
             }
         });
-        /* Daily average counts days up to the LAST recorded expense, not up to
-           today — the card app updates with a delay, so dividing by "today"
-           would understate the average. Capped at today just in case a
-           future-dated entry sneaks in. */
+        /* Days are counted up to the LAST recorded expense, not up to today —
+           the card app updates with a delay, so dividing by "today" would
+           understate the average. Capped at today. */
         var upTo = lastDate || start;
         var today = todayStr();
         if (upTo > today) upTo = today;
         var days = Math.max(1, Math.round((new Date(upTo + 'T00:00:00') - new Date(start + 'T00:00:00')) / 86400000) + 1);
+        var daily = onTrip / days;
+
+        /* End-of-trip estimate: everything already recorded + the same daily
+           run-rate for the remaining days of the trip */
+        var ranges = tripRanges();
+        var lastNight = ranges.length ? ranges[ranges.length - 1].last : start;
+        var tripDays = Math.max(1, Math.round((new Date(lastNight + 'T00:00:00') - new Date(start + 'T00:00:00')) / 86400000) + 2); /* +1 checkout day */
+        var remaining = Math.max(0, tripDays - days);
+        var estimate = total + daily * remaining;
+
         var el;
         if ((el = document.getElementById('expSumTotal'))) el.textContent = fmtIls(total);
         if ((el = document.getElementById('expSumNoFl'))) el.textContent = fmtIls(noFlights);
-        if ((el = document.getElementById('expSumDaily'))) el.textContent = fmtIls(onTrip / days);
-        if ((el = document.getElementById('expSumDailyNote'))) el.textContent = 'לפי ' + days + ' ימים (עד ההוצאה האחרונה שנרשמה), בלי טיסות';
+        if ((el = document.getElementById('expSumDaily'))) el.textContent = fmtIls(daily);
+        if ((el = document.getElementById('expSumDailyNote'))) el.textContent = 'לפי ' + days + ' ימים (עד ההוצאה האחרונה), בלי טיסות וביטוחים';
+        if ((el = document.getElementById('expSumEst'))) el.textContent = fmtIls(estimate);
+        if ((el = document.getElementById('expSumEstNote'))) el.textContent = 'אם נמשיך באותו קצב עוד ' + remaining + ' ימים';
     }
     function renderCatBars() {
         var el = document.getElementById('expCatBars');
@@ -390,13 +415,35 @@
         if (!el) return;
         var sums = {};
         state.items.forEach(function (i) {
-            var dst = destFor(i.d);
+            var dst = destFor(i);
             sums[dst] = (sums[dst] || 0) + (parseFloat(i.ils) || 0);
         });
-        var names = ['לפני הטיול'].concat(tripRanges().map(function (r) { return r.name; })).concat(['סוף הטיול']);
-        el.innerHTML = names.filter(function (n) { return sums[n]; }).map(function (n) {
-            return '<div class="exp-dest-row"><span>' + esc(n) + '</span><b>' + fmtIls(sums[n]) + '</b></div>';
-        }).join('');
+        var ranges = tripRanges();
+        var today = todayStr();
+        /* days spent in a destination so far: from check-in up to min(today,
+           night after last night). Future destinations → 0. */
+        function daysIn(r) {
+            if (today < r.first) return 0;
+            var end = new Date(r.last + 'T00:00:00');
+            end.setDate(end.getDate() + 1);
+            var endStr = end.getFullYear() + '-' + String(end.getMonth() + 1).padStart(2, '0') + '-' + String(end.getDate()).padStart(2, '0');
+            var upTo = today < endStr ? today : endStr;
+            return Math.max(1, Math.round((new Date(upTo + 'T00:00:00') - new Date(r.first + 'T00:00:00')) / 86400000) + (today < endStr ? 1 : 0));
+        }
+        var html = '';
+        if (sums['לפני הטיול']) {
+            html += '<div class="exp-dest-row"><span>לפני הטיול</span><b>' + fmtIls(sums['לפני הטיול']) + '</b></div>';
+        }
+        ranges.forEach(function (r) {
+            if (!sums[r.name]) return;
+            var d = daysIn(r);
+            var avg = d ? ' <span class="exp-dest-avg">· ' + fmtIls(sums[r.name] / d) + ' ליום (' + d + ' ימים)</span>' : '';
+            html += '<div class="exp-dest-row"><span>' + esc(r.name) + avg + '</span><b>' + fmtIls(sums[r.name]) + '</b></div>';
+        });
+        if (sums['סוף הטיול']) {
+            html += '<div class="exp-dest-row"><span>סוף הטיול</span><b>' + fmtIls(sums['סוף הטיול']) + '</b></div>';
+        }
+        el.innerHTML = html;
     }
 
     /* ---- list ---- */
@@ -406,6 +453,32 @@
         return 'יום ' + DAY_NAMES[dt.getDay()] + ' · ' + dt.getDate() + '.' + (dt.getMonth() + 1);
     }
     function curSym(c) { return c === 'IDR' ? 'Rp' : c === 'USD' ? '$' : c === 'EUR' ? '€' : c; }
+    function itemPassesFilter(i) {
+        var f = state.filter;
+        if (f.cat && i.c !== f.cat) return false;
+        if (f.dest && destFor(i) !== f.dest) return false;
+        if (f.q) {
+            var q = f.q.toLowerCase();
+            if (String(i.t).toLowerCase().indexOf(q) === -1 && String(i.c).toLowerCase().indexOf(q) === -1) return false;
+        }
+        return true;
+    }
+    function renderFilterOptions() {
+        var catSel = document.getElementById('expFilterCat');
+        var destSel = document.getElementById('expFilterDest');
+        if (catSel && catSel.options.length <= 1) {
+            catSel.innerHTML = '<option value="">כל הקטגוריות</option>' + CATS.map(function (c) {
+                return '<option value="' + esc(c.key) + '">' + c.emoji + ' ' + esc(c.key) + '</option>';
+            }).join('');
+        }
+        if (destSel) {
+            var cur = destSel.value;
+            var names = ['לפני הטיול'].concat(tripRanges().map(function (r) { return r.name; })).concat(['סוף הטיול']);
+            destSel.innerHTML = '<option value="">כל היעדים</option>' + names.map(function (n) {
+                return '<option value="' + esc(n) + '"' + (n === cur ? ' selected' : '') + '>' + esc(n) + '</option>';
+            }).join('');
+        }
+    }
     function renderList() {
         var el = document.getElementById('expList');
         if (!el) return;
@@ -413,7 +486,20 @@
             el.innerHTML = '<p class="exp-empty">אין עדיין הוצאות. תוסיפו את הראשונה למעלה 👆</p>';
             return;
         }
-        var sorted = state.items.slice().sort(function (a, b) {
+        var filtered = state.items.filter(itemPassesFilter);
+        var hasFilter = state.filter.q || state.filter.cat || state.filter.dest;
+        var sumEl = document.getElementById('expFilterSum');
+        if (sumEl) {
+            if (hasFilter) {
+                var fsum = filtered.reduce(function (s, i) { return s + (parseFloat(i.ils) || 0); }, 0);
+                sumEl.textContent = filtered.length + ' הוצאות · ' + fmtIls(fsum);
+            } else sumEl.textContent = '';
+        }
+        if (!filtered.length) {
+            el.innerHTML = '<p class="exp-empty">אין הוצאות שמתאימות לסינון</p>';
+            return;
+        }
+        var sorted = filtered.slice().sort(function (a, b) {
             return a.d === b.d ? String(a.id).localeCompare(String(b.id)) : (a.d < b.d ? 1 : -1);
         });
         var html = '', lastDate = '';
@@ -490,6 +576,7 @@
         renderSummary();
         renderCatBars();
         renderDestRows();
+        renderFilterOptions();
         renderList();
     }
 
@@ -508,6 +595,12 @@
         if (addBtn) addBtn.addEventListener('click', addExpense);
         var descEl = document.getElementById('expDesc');
         if (descEl) descEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') addExpense(); });
+        var fq = document.getElementById('expFilterQ');
+        if (fq) fq.addEventListener('input', function () { state.filter.q = fq.value.trim(); renderList(); });
+        var fc = document.getElementById('expFilterCat');
+        if (fc) fc.addEventListener('change', function () { state.filter.cat = fc.value; renderList(); });
+        var fd = document.getElementById('expFilterDest');
+        if (fd) fd.addEventListener('change', function () { state.filter.dest = fd.value; renderList(); });
         var impBtn = document.getElementById('expImportBtn');
         if (impBtn) impBtn.addEventListener('click', importJson);
         var expBtn = document.getElementById('expExportBtn');

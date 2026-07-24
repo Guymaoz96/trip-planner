@@ -52,6 +52,11 @@
                 <div class="budget-sum-value" id="expSumDaily">—</div>
                 <div class="exp-sum-note" id="expSumDailyNote"></div>
             </div>
+            <div class="budget-sum-card exp-est-card">
+                <div class="budget-sum-label">אומדן לסוף הטיול</div>
+                <div class="budget-sum-value" id="expSumEst">—</div>
+                <div class="exp-sum-note" id="expSumEstNote"></div>
+            </div>
         </div>
 
         <div class="overview exp-add-card">
@@ -81,6 +86,12 @@
         <div class="overview">
             <div class="exp-h2">כל ההוצאות</div>
             <p class="exp-hint">לחיצה על שורה — עריכה או מחיקה.</p>
+            <div class="exp-filters">
+                <input type="search" id="expFilterQ" placeholder="חיפוש...">
+                <select id="expFilterCat"><option value="">כל הקטגוריות</option></select>
+                <select id="expFilterDest"><option value="">כל היעדים</option></select>
+                <span class="exp-filter-sum" id="expFilterSum"></span>
+            </div>
             <div id="expList"></div>
         </div>
 
