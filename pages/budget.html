@@ -69,6 +69,11 @@
             <div class="exp-rate-note" id="expRateNote"></div>
             <input type="text" id="expDesc" placeholder="על מה? (למשל: ארוחת ערב בוורונג)" maxlength="80">
             <div id="expCatChips" class="exp-cat-chips"></div>
+            <div class="exp-lodging-row" id="expLodgingRow" hidden>
+                <label>כמה לילות? <input type="number" id="expNights" min="1" max="60" inputmode="numeric" placeholder="1"></label>
+                <label>צ׳ק-אין <input type="date" id="expStayStart"></label>
+                <span class="exp-hint" style="margin:0">ללינה של כמה לילות — העלות מתחלקת פר לילה בממוצע היומי</span>
+            </div>
             <div class="exp-add-actions">
                 <input type="date" id="expDate">
                 <button type="button" id="expAddBtn">הוספה</button>

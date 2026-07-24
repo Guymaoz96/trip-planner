@@ -48,7 +48,7 @@
         { id: 's-fl-rho', d: '2026-07-01', t: 'טיסה רודוס–תל אביב', c: 'טיסות', ils: 880 },
         { id: 's-ins-guy', d: '2026-07-15', t: 'ביטוח נסיעות – גיא', c: 'ביטוח ומסמכים', ils: 576, dest: 'pre' },
         { id: 's-visa', d: '2026-07-10', t: 'ויזה מראש (נגנבה, לא נוצלה)', c: 'ביטוח ומסמכים', ils: 375, dest: 'pre' },
-        { id: 's-abnb-0716', d: '2026-07-16', t: 'Airbnb – לינה באולוואטו', c: 'לינה', ils: 1471.9, src: 'adi', dest: 'uluwatu' },
+        { id: 's-abnb-0716', d: '2026-07-16', t: 'Airbnb – לינה באולוואטו', c: 'לינה', ils: 1471.9, src: 'adi', dest: 'uluwatu', n: 5, sd: '2026-07-19' },
         { id: 's-ins-adi', d: '2026-07-19', t: 'ביטוח נסיעות הראל – עדי', c: 'ביטוח ומסמכים', ils: 259.25, src: 'adi', dest: 'pre' },
         { id: 's-sim-guy', d: '2026-07-19', t: 'סים לגיא', c: 'אחר', ils: 26 },
         { id: 's-fx-usd', d: '2026-07-19', t: 'המרת 300$ בשדה (שער יקר)', c: 'מזומן', ils: 956, amt: 300, cur: 'USD' },
@@ -118,7 +118,9 @@
             if (item.dest === 'end') return 'סוף הטיול';
             for (var j = 0; j < ranges.length; j++) if (ranges[j].id === item.dest) return ranges[j].name;
         }
-        var dateStr = item.d;
+        /* lodging with a check-in date is assigned to where the stay is,
+           not to the day the card was charged */
+        var dateStr = item.sd || item.d;
         if (dateStr < ranges[0].first) return 'לפני הטיול';
         for (var i = 0; i < ranges.length; i++) {
             var next = ranges[i + 1];
@@ -128,6 +130,33 @@
     }
     /* Fixed pre-trip costs: not part of the daily run-rate (like flights) */
     var FIXED_CATS = { 'טיסות': 1, 'ביטוח ומסמכים': 1 };
+
+    /* Lodging proration: an item may carry n (nights) and sd (check-in date).
+       Its cost is ils/n per night; the daily average counts only the nights
+       that fall inside the calculation window, so a stay paid up front for
+       5 nights contributes exactly 4 nights' worth when the window ends one
+       night early. */
+    function addDays(dateStr, k) {
+        var dt = new Date(dateStr + 'T00:00:00');
+        dt.setDate(dt.getDate() + k);
+        return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    }
+    function diffDays(a, b) {
+        return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+    }
+    function proratedShare(item, winStart, winEnd) {
+        /* portion of item.ils whose nights fall inside [winStart..winEnd] */
+        var n = parseInt(item.n, 10);
+        if (!n || n < 2) return null; /* not prorated */
+        var sd = item.sd || item.d;
+        var lastNight = addDays(sd, n - 1);
+        var from = sd > winStart ? sd : winStart;
+        var to = lastNight < winEnd ? lastNight : winEnd;
+        var nights = diffDays(from, to) + 1;
+        if (nights <= 0) return 0;
+        if (nights > n) nights = n;
+        return item.ils / n * nights;
+    }
 
     /* ---- persistence (site pattern: LS first, Firestore preferred) ---- */
     function saveLs(items) {
@@ -258,6 +287,8 @@
                 renderCatChips();
             });
         });
+        var lodge = document.getElementById('expLodgingRow');
+        if (lodge) lodge.hidden = state.cat !== 'לינה';
     }
     function addExpense() {
         var descEl = document.getElementById('expDesc');
@@ -279,6 +310,17 @@
         };
         var raw = parseFloat(amtEl.value);
         if (state.cur !== 'ILS' && raw) { item.amt = raw; item.cur = state.cur; }
+        if (state.cat === 'לינה') {
+            var nEl = document.getElementById('expNights');
+            var sdEl = document.getElementById('expStayStart');
+            var n = nEl ? parseInt(nEl.value, 10) : 0;
+            if (n > 1) {
+                item.n = n;
+                item.sd = (sdEl && sdEl.value) || item.d;
+            }
+            if (nEl) nEl.value = '';
+            if (sdEl) sdEl.value = '';
+        }
         item.id = newId(item);
         if (state.items.some(function (i) { return i.id === item.id; })) item.id += '-' + Date.now().toString(36);
         setItems(state.items.concat([item]));
@@ -312,6 +354,9 @@
             if (raw.amt) item.amt = raw.amt;
             if (raw.cur) item.cur = raw.cur;
             if (raw.src) item.src = raw.src;
+            if (raw.dest) item.dest = raw.dest;
+            if (raw.n) item.n = raw.n;
+            if (raw.sd) item.sd = raw.sd;
             item.id = raw.id || newId(item);
             if (have[item.id]) { skipped++; return; }
             have[item.id] = 1;
@@ -353,16 +398,16 @@
 
     /* ---- summaries ---- */
     function renderSummary() {
-        var total = 0, noFlights = 0, onTrip = 0, lastDate = '';
+        var total = 0, noFlights = 0, lastDate = '';
         var start = tripStart();
         state.items.forEach(function (i) {
             var v = parseFloat(i.ils) || 0;
             total += v;
             if (i.c !== 'טיסות') noFlights += v;
-            /* daily run-rate: on-trip spending, excluding fixed pre-trip costs
-               (flights + insurance/documents) */
-            if (i.d >= start && !FIXED_CATS[i.c]) {
-                onTrip += v;
+            /* the window's end date is set by regular (non-prorated) on-trip
+               expenses — prorated lodging follows the window, not the other
+               way around */
+            if (i.d >= start && !FIXED_CATS[i.c] && !(parseInt(i.n, 10) > 1)) {
                 if (i.d > lastDate) lastDate = i.d;
             }
         });
@@ -372,7 +417,17 @@
         var upTo = lastDate || start;
         var today = todayStr();
         if (upTo > today) upTo = today;
-        var days = Math.max(1, Math.round((new Date(upTo + 'T00:00:00') - new Date(start + 'T00:00:00')) / 86400000) + 1);
+        var days = Math.max(1, diffDays(start, upTo) + 1);
+
+        /* on-trip spend inside the window: full amount for regular expenses,
+           per-night share for prorated lodging */
+        var onTrip = 0;
+        state.items.forEach(function (i) {
+            if (FIXED_CATS[i.c]) return;
+            var share = proratedShare(i, start, upTo);
+            if (share !== null) { onTrip += share; return; }
+            if (i.d >= start && i.d <= upTo) onTrip += parseFloat(i.ils) || 0;
+        });
         var daily = onTrip / days;
 
         /* End-of-trip estimate: everything already recorded + the same daily
@@ -381,7 +436,16 @@
         var lastNight = ranges.length ? ranges[ranges.length - 1].last : start;
         var tripDays = Math.max(1, Math.round((new Date(lastNight + 'T00:00:00') - new Date(start + 'T00:00:00')) / 86400000) + 2); /* +1 checkout day */
         var remaining = Math.max(0, tripDays - days);
-        var estimate = total + daily * remaining;
+        /* lodging nights already paid for dates beyond the window are inside
+           `total`, so don't charge those days again at the daily rate */
+        var prepaidAhead = 0;
+        state.items.forEach(function (i) {
+            var n = parseInt(i.n, 10);
+            if (!n || n < 2) return;
+            var share = proratedShare(i, start, upTo);
+            prepaidAhead += (parseFloat(i.ils) || 0) - (share || 0);
+        });
+        var estimate = total + Math.max(0, daily * remaining - prepaidAhead);
 
         var el;
         if ((el = document.getElementById('expSumTotal'))) el.textContent = fmtIls(total);
@@ -514,7 +578,7 @@
             html += '<div class="exp-row" data-id="' + esc(i.id) + '">' +
                 '<span class="exp-row-emoji" style="background:' + m.color + '22">' + m.emoji + '</span>' +
                 '<span class="exp-row-main"><span class="exp-row-title">' + esc(i.t) + '</span>' +
-                '<span class="exp-row-sub">' + esc(i.c) + (i.src ? ' · כרטיס ' + (i.src === 'guy' ? 'גיא' : 'עדי') : '') + '</span></span>' +
+                '<span class="exp-row-sub">' + esc(i.c) + (parseInt(i.n, 10) > 1 ? ' · ' + i.n + ' לילות' : '') + (i.src ? ' · כרטיס ' + (i.src === 'guy' ? 'גיא' : 'עדי') : '') + '</span></span>' +
                 local +
                 '<span class="exp-row-amt">' + fmtIls(i.ils) + '</span>' +
                 '</div>';
@@ -542,6 +606,11 @@
             '<select class="exp-edit-cat">' + opts + '</select>' +
             '<span class="exp-edit-ils-wrap"><input type="number" class="exp-edit-ils" value="' + esc(i.ils) + '" step="0.01" min="0" inputmode="decimal"> ₪</span>' +
             '</div>' +
+            (i.c === 'לינה' || parseInt(i.n, 10) > 1 ?
+                '<div class="exp-edit-row">' +
+                '<label class="exp-edit-lbl">לילות <input type="number" class="exp-edit-n" value="' + esc(i.n || '') + '" min="1" max="60" inputmode="numeric"></label>' +
+                '<label class="exp-edit-lbl">צ׳ק-אין <input type="date" class="exp-edit-sd" value="' + esc(i.sd || i.d) + '"></label>' +
+                '</div>' : '') +
             '<div class="exp-edit-actions">' +
             '<button type="button" class="exp-edit-save">שמירה</button>' +
             '<button type="button" class="exp-edit-del">מחיקה</button>' +
@@ -561,6 +630,15 @@
                 copy.d = form.querySelector('.exp-edit-date').value || i.d;
                 copy.c = form.querySelector('.exp-edit-cat').value;
                 copy.ils = parseFloat(form.querySelector('.exp-edit-ils').value) || i.ils;
+                var nEl = form.querySelector('.exp-edit-n');
+                var sdEl = form.querySelector('.exp-edit-sd');
+                if (nEl) {
+                    var n = parseInt(nEl.value, 10);
+                    if (n > 1) {
+                        copy.n = n;
+                        copy.sd = (sdEl && sdEl.value) || copy.d;
+                    } else { delete copy.n; delete copy.sd; }
+                }
                 return copy;
             });
             state.editId = null;
