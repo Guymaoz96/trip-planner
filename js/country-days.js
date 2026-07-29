@@ -131,12 +131,26 @@
         );
     }
 
+    /* The mobile detail pane is a centred overlay on top of a full-screen
+       backdrop (z-index 1390, see style.css). Closing the pane without taking
+       the backdrop down left an invisible <button> covering the whole page:
+       the screen stayed dimmed and every tap — nav, day cubes, links — hit the
+       backdrop instead, so the app looked frozen until it was force-quit. */
+    function hideBackdrop() {
+        var backdrop = document.getElementById('countryDetailBackdrop');
+        if (!backdrop) return;
+        backdrop.classList.remove('is-visible');
+        backdrop.hidden = true;
+        backdrop.onclick = null;
+    }
+
     function closeDetail() {
         if (typeof window.saveTimelineNow === 'function') window.saveTimelineNow();
         var content = document.getElementById('countryDetailContent');
         var empty = document.getElementById('countryDetailEmpty');
         var shell = document.getElementById('countryDetailShell');
         if (shell) shell.classList.remove('is-detail-open');
+        hideBackdrop();
         if (content) {
             content.innerHTML = '';
             content.hidden = true;
@@ -251,10 +265,8 @@
             backdrop.hidden = false;
             backdrop.classList.add('is-visible');
             backdrop.onclick = function() { closeDetail(); };
-        } else if (backdrop) {
-            backdrop.hidden = true;
-            backdrop.classList.remove('is-visible');
-            backdrop.onclick = null;
+        } else {
+            hideBackdrop();
         }
 
         if (noScroll) return;

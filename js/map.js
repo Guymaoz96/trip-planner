@@ -15,6 +15,8 @@
         rajaampat: { pos: [-0.2333, 130.8167], flag: '🐠', sub: 'צלילה ושנורקל', color: '#88d8c0' },
         sideman: { pos: [-8.4350, 115.4450], flag: '🌾', sub: 'טרסות אורז', color: '#a8c0ff' },
         gili: { pos: [-8.3575, 116.0847], flag: '🐢', sub: 'אי צבים', color: '#ffc38b' },
+        lombok: { pos: [-8.8970, 116.2830], flag: '🏄', sub: 'גלישה וחופים', color: '#90e0ef' },
+        tetebatu: { pos: [-8.5606, 116.4092], flag: '🌾', sub: 'כפר ורינג׳אני', color: '#b7e4c7' },
         nusa: { pos: [-8.6813, 115.4531], flag: '🤿', sub: 'מנטות וחופים', color: '#c3a8ff' },
         munduk: { pos: [-8.2650, 115.0680], flag: '⛰️', sub: 'הרים ומפלים', color: '#8bd3ff' },
         ubud: { pos: [-8.5069, 115.2625], flag: '🌴', sub: 'תרבות וג׳ונגל', color: '#ffb3c8' }

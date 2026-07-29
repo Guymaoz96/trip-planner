@@ -1,9 +1,12 @@
-/* Shared metadata for the 4 "יעדים נוספים" candidates (pages/more-destinations.html),
-   from Roni & Shoham's guide. Used by:
+/* Shared metadata for destinations that have no hand-written page of their own —
+   the "יעדים נוספים" candidates (pages/more-destinations.html) plus the stops
+   that were added to the itinerary later. Used by:
    - js/itinerary-editor.js — the homepage "add destination" picker + preview
-   - js/map.js — pin position/color for a candidate added to the itinerary
-   - pages/country.html — pre-written recommendations for a candidate, instead
-     of the "no tips yet" placeholder
+   - js/map.js — pin position/color for an entry added to the itinerary
+   - pages/country.html — pre-written recommendations, instead of the
+     "no tips yet" placeholder
+   `mapArea` is the English town appended to the Google-Maps search built from
+   a recommendation's place name — see destSearchArea() in js/main.js.
    A fully custom (typed-in) destination has no entry here — that's expected;
    it just won't get a map pin or recs until someone builds a page for it. */
 var DESTINATION_CATALOG = [
@@ -12,7 +15,7 @@ var DESTINATION_CATALOG = [
         sourceLabel: '🪸 רוני ושוהם', sourceClass: 'roni',
         title: '🐚 Amed — צפון באלי',
         lead: 'עיירה קטנה ומרגיעה, מושלמת לשנורקלינג וצלילה, עם נוף מושלם של הר הגעש אגונג.',
-        pos: [-8.341, 115.653], color: '#f4a261',
+        pos: [-8.341, 115.653], color: '#f4a261', mapArea: 'Amed, Bali',
         recs: [
             { cls: 'is-info', heading: '💧 בדרך לשם', items: [
                 '<b>Tukad Cepung Waterfall</b> — מפל יפייפה שמואר באור דרמטי. חובה עצירה בדרך מאובוד.'
@@ -28,11 +31,11 @@ var DESTINATION_CATALOG = [
         ]
     },
     {
-        id: 'lombok', name: 'לומבוק', defaultNights: 5,
+        id: 'lombok', name: 'קוטה לומבוק', defaultNights: 4,
         sourceLabel: '🪸 רוני ושוהם', sourceClass: 'roni',
-        title: '🏄 לומבוק — קוטה, גלישה וטרק רינג׳אני',
+        title: '🏄 קוטה לומבוק — גלישה, חופים וטרק רינג׳אני',
         lead: 'האחות השקטה והפחות מתויירת של באלי. גלישת גלים וקייט, אוכל מדהים, וטרק לפסגה וולקנית מטורפת (רינג׳אני, 3,726 מ׳).',
-        pos: [-8.897, 116.283], color: '#90e0ef',
+        pos: [-8.897, 116.283], color: '#90e0ef', mapArea: 'Kuta Lombok',
         recs: [
             { cls: 'is-stay', heading: '🏨 לינה בקוטה לומבוק', items: [
                 '<b>Merendeng Hostel</b> — ההוסטל הכי משתלם! חדר זוגי פרטי עם מקלחת, ~50 ש״ח ללילה.',
@@ -62,11 +65,26 @@ var DESTINATION_CATALOG = [
         ]
     },
     {
+        id: 'tetebatu', name: 'תטבטו', defaultNights: 2,
+        sourceLabel: '🌋 שיר', sourceClass: 'shir',
+        title: '🌾 תטבטו — הכפר שבלב לומבוק',
+        lead: 'באמצע האי, מתחת להר הגעש רינג׳אני. הכי פחות תיירותי ומאוד אותנטי — אנשים מקסימים ונופים מדהימים.',
+        pos: [-8.5606, 116.4092], color: '#b7e4c7', mapArea: 'Tetebatu, Lombok',
+        recs: [
+            { cls: 'is-info', heading: '🌾 למה להגיע', items: [
+                'באמצע האי, עם נוף יפייפה להר הגעש המפורסם <b>Rinjani</b>. הכי פחות תיירותי מכל המקומות בלומבוק ומאוד אותנטי, אנשים מקסימים.',
+                'שווה סיור עם מישהו מקומי — זו הדרך לראות את המקום באמת.',
+                'ממש יפה להסתובב באזור באופנוע. הנסיעה לכאן באופנוע יכולה להיות קצת מתישה, אבל שווה את הניידות במקום עצמו.',
+                '⏱️ 2–3 לילות זה בדיוק — לחקור קצת באופנוע ולעשות סיור עם מקומי.'
+            ] }
+        ]
+    },
+    {
         id: 'secretgilis', name: 'Secret Gilis', defaultNights: 2,
         sourceLabel: '🪸 רוני ושוהם', sourceClass: 'roni',
         title: '🌊 Secret Gilis — האיים הדרומיים של לומבוק',
         lead: 'קבוצת איים שקטים ולא מפותחים — שונה לגמרי מהגיליז הצפוניים. פחות נוחות אך שקט אמיתי ומחירים נמוכים.',
-        pos: [-8.751, 116.038], color: '#caffbf',
+        pos: [-8.751, 116.038], color: '#caffbf', mapArea: 'Gili Asahan, Lombok',
         recs: [
             { cls: 'is-stay', heading: '🏨 לינה', items: [
                 '<b>Kristal Garden</b> — בעלים מקסים, מסעדה במקום; בלי מים חמים, יתושים בחדר.',
@@ -84,7 +102,7 @@ var DESTINATION_CATALOG = [
         sourceLabel: '🪸 רוני ושוהם', sourceClass: 'roni',
         title: '🐉 פלורס — הפנינה האמיתית של אינדונזיה',
         lead: 'פחות מתויר, טבע פראי, חופים בתוליים והצלילות המרגשות ביותר באינדונזיה. מומלץ להקדיש לפחות 10–14 ימים.',
-        pos: [-8.487, 119.889], color: '#ffadad',
+        pos: [-8.487, 119.889], color: '#ffadad', mapArea: 'Labuan Bajo, Flores',
         recs: [
             { cls: 'is-food', heading: '🍽️ מסעדות', items: [
                 '<b>Mimamori Cafe</b> — מושלם לקפה וארוחת בוקר.',
