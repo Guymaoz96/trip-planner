@@ -190,6 +190,17 @@ the DOM are pruned on every render — day panels are rebuilt each time the
 detail pane opens. Destination names come from `tripData` at render time, so
 renaming a stop in the itinerary editor renames its diary too.
 
+### The timeline editor and its own echo
+
+`js/edit-mode.js` saves on every mutation, and the Firestore listener in
+`loadSavedChanges()` hands that write straight back ~150ms later, which makes
+`renderTimelineItems()` rebuild every `.timeline-item` from scratch. Anything
+living in that markup that isn't in the saved data is therefore **transient**:
+the inline `.edit-form` and the ✏️/🗑️ `.edit-controls` were both destroyed by
+the echo of the user's own save. So `renderTimelineItems()` bails out while a
+form is open and re-applies `addEditControls()` when `editModeEnabled`.
+**Anything else added to a timeline item's DOM needs the same treatment.**
+
 ### Persistence pattern (reused everywhere: budget, todo, packing, timeline)
 
 Always write to `localStorage` first (works with no setup). If

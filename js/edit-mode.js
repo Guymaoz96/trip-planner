@@ -385,10 +385,19 @@
         } catch (e) {}
     }
 
+    /* Rebuilds the whole timeline from saved data — every .timeline-item is
+       thrown away and recreated, so anything the user was in the middle of
+       goes with it. That matters because a save echoes straight back through
+       the Firestore listener: adding an activity saved immediately, and ~150ms
+       later its own snapshot wiped both the open edit form and every ✏️/🗑️
+       button, leaving a "פעילות חדשה" that could not be edited until edit mode
+       was toggled off and on. So: never re-render over an open form, and
+       re-apply the edit controls to the fresh markup when edit mode is on. */
     function renderTimelineItems(items) {
         var root = getScope();
         var container = root.querySelector('.timeline-container');
         if (!container) return;
+        if (container.querySelector('.edit-form')) return;
         container.querySelectorAll('.timeline-item').forEach(function(el) { el.remove(); });
         var line = container.querySelector('.timeline-line');
         (items || []).forEach(function(data) {
@@ -401,6 +410,9 @@
             if (line) line.parentNode.insertBefore(item, line.nextSibling);
         });
         updateTimeline();
+        if (editModeEnabled) {
+            container.querySelectorAll('.timeline-item').forEach(function(item) { addEditControls(item); });
+        }
         hidePlaceholder();
     }
 
