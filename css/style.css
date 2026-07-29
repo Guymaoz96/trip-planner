@@ -8,6 +8,9 @@
     --teal: #88d8c0;
     --teal-soft: #e0f7fa;
     --purple-soft: #f3e5f5;
+    /* Third recommendation source (שיר) — see the attribution note in
+       CLAUDE.md: every source gets its own colour, never a borrowed one. */
+    --amber-soft: #fdf0d5;
     --text: #2d3748;
     --text-muted: #718096;
     --white: #ffffff;
@@ -1968,6 +1971,7 @@ body.page-country {
 }
 .rec-source--neta { background: var(--teal-soft); color: #1f6e5c; }
 .rec-source--roni { background: var(--purple-soft); color: #6b3fa0; }
+.rec-source--shir { background: var(--amber-soft); color: #8a5a12; }
 .recs-card ul { list-style: none; padding: 0; margin: 0; }
 .recs-card li { padding: 0.35rem 0; border-bottom: 1px dashed rgba(0,0,0,0.07); font-size: 0.94rem; }
 .recs-card li:last-child { border-bottom: none; }
@@ -2453,6 +2457,7 @@ body.page-country {
    that appears on the cards — see the attribution note in CLAUDE.md. */
 .recs-chip--src.rec-source--neta { background: var(--teal-soft); color: #1f6e5c; }
 .recs-chip--src.rec-source--roni { background: var(--purple-soft); color: #6b3fa0; }
+.recs-chip--src.rec-source--shir { background: var(--amber-soft); color: #8a5a12; }
 .recs-chip--src.is-active { background: var(--pink-gradient); color: var(--white); }
 
 .recs-count { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.6rem; }

@@ -86,12 +86,22 @@
 
     /* ---- persistence (localStorage always, Firestore when configured) ---- */
 
+    function persistLocal() {
+        try {
+            localStorage.setItem(LS_KEY, JSON.stringify({
+                countries: tripData.countries,
+                migrations: appliedMigrations
+            }));
+        } catch (e) {}
+    }
+
     function saveOverride() {
-        try { localStorage.setItem(LS_KEY, JSON.stringify({ countries: tripData.countries })); } catch (e) {}
+        persistLocal();
         if (typeof db !== 'undefined' && db) {
             try {
                 db.collection('tripConfig').doc('main').set({
                     countries: tripData.countries,
+                    migrations: appliedMigrations,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }).catch(function (e) { console.warn('itinerary save', e); });
             } catch (e) {}
@@ -105,6 +115,7 @@
             var data = JSON.parse(raw);
             if (data && Array.isArray(data.countries) && data.countries.length) {
                 tripData.countries = data.countries;
+                if (Array.isArray(data.migrations)) appliedMigrations = data.migrations.slice();
                 return true;
             }
         } catch (e) {}
@@ -117,7 +128,10 @@
             db.collection('tripConfig').doc('main').onSnapshot(function (doc) {
                 if (doc.exists && doc.data() && Array.isArray(doc.data().countries) && doc.data().countries.length) {
                     tripData.countries = doc.data().countries;
-                    try { localStorage.setItem(LS_KEY, JSON.stringify({ countries: tripData.countries })); } catch (e) {}
+                    appliedMigrations = Array.isArray(doc.data().migrations) ? doc.data().migrations.slice() : [];
+                    /* applyMigrations() saves (cloud included) when it changes
+                       something, so only mirror to localStorage otherwise. */
+                    if (!applyMigrations(true)) persistLocal();
                     notifyChange();
                 } else if (hasLocalOverride) {
                     /* This browser holds an edited itinerary that never reached
@@ -141,9 +155,93 @@
         document.dispatchEvent(new CustomEvent('tripdatachange'));
     }
 
+    /* ---- one-off corrections replayed onto an already-saved itinerary ---- */
+
+    /* The plan hardcoded in js/main.js, captured BEFORE any override is loaded
+       over it — the migrations below rebuild a destination straight from it,
+       so the corrected labels/nights live in exactly one place. */
+    var DEFAULT_COUNTRIES = JSON.parse(JSON.stringify(tripData.countries || []));
+    var appliedMigrations = [];
+
+    function indexOfId(countries, id) {
+        for (var i = 0; i < countries.length; i++) {
+            if (countries[i].id === id) return i;
+        }
+        return -1;
+    }
+
+    function defaultCountry(id) {
+        var i = indexOfId(DEFAULT_COUNTRIES, id);
+        return i === -1 ? null : JSON.parse(JSON.stringify(DEFAULT_COUNTRIES[i]));
+    }
+
+    /* Editing the defaults in js/main.js is not enough on its own: every
+       browser that has opened the site holds an override (localStorage +
+       Firestore tripConfig/main) that is loaded over them, and the editor UI
+       can add/reorder/resize destinations but cannot RENAME one. So a
+       correction to the plan has to be replayed onto the saved override once.
+       Each entry runs at most once — the ids that already ran are stored in
+       the override itself, so the fix reaches every device and never
+       re-applies (which would resurrect something deleted on purpose later).
+       A browser with no override at all skips all of this: it is already
+       reading the corrected defaults. */
+    var MIGRATIONS = [
+        {
+            /* "לומבוק" was really two stops: Kuta in the south, then the
+               inland village Tetebatu (Shir's tip). 5 nights → 4 + 2. */
+            id: '2026-07-kuta-lombok-tetebatu',
+            apply: function (countries) {
+                var i = indexOfId(countries, 'lombok');
+                var kuta = defaultCountry('lombok');
+                var tetebatu = defaultCountry('tetebatu');
+                if (i === -1 || !kuta || !tetebatu) return;
+                if (indexOfId(countries, 'tetebatu') !== -1) {
+                    /* Tetebatu was already added by hand — rename only, and
+                       leave the nights whoever did it chose. */
+                    countries[i].name = kuta.name;
+                    countries[i].intro = kuta.intro;
+                    return;
+                }
+                countries.splice(i, 1, kuta, tetebatu);
+
+                /* Gili's arrival day still described the ferry from Padangbai
+                   in Bali, which stopped being true when Lombok moved ahead of
+                   it. Matched on the stale text so a later hand-written label
+                   is never overwritten. */
+                var g = indexOfId(countries, 'gili');
+                var firstGiliDay = g === -1 ? null : (countries[g].weeks[0] || {}).days;
+                if (firstGiliDay && firstGiliDay[0] && /Padangbai/i.test(firstGiliDay[0].label || '')) {
+                    firstGiliDay[0].label = 'מעבר מתטבטו לגילי אייר (Villa Bagus)';
+                }
+            }
+        }
+    ];
+
+    function applyMigrations(persist) {
+        var countries = tripData.countries || [];
+        var ran = false;
+        MIGRATIONS.forEach(function (m) {
+            if (appliedMigrations.indexOf(m.id) !== -1) return;
+            try { m.apply(countries); } catch (e) { console.warn('itinerary migration', m.id, e); }
+            /* Marked as done even if it found nothing to change — it ran. */
+            appliedMigrations.push(m.id);
+            ran = true;
+        });
+        if (!ran) return false;
+        recomputeDates();
+        if (persist) saveOverride();
+        return true;
+    }
+
     /* Apply any saved override immediately (synchronous, top-level) so every
        script loaded after this one sees the corrected tripData.countries. */
     var hasLocalOverride = loadOverrideFromLocalStorage();
+
+    /* Migrate the local copy right away so the first paint is already correct,
+       but when Firestore is configured leave the WRITE to the snapshot handler
+       below — a stale localStorage copy must not overwrite a newer plan saved
+       from another device. */
+    if (hasLocalOverride) applyMigrations(typeof db === 'undefined' || !db);
 
     /* ---- editor UI — lives inside the existing #countryCards grid on the
        homepage. renderCountryCards() (js/main.js) always emits the order

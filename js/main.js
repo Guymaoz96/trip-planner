@@ -36,7 +36,7 @@ const tripData = {
                         { dayNum: 2, date: '2026-07-20', label: 'חופים: Dreamland / Balangan' },
                         { dayNum: 3, date: '2026-07-21', label: 'Melasti + מקדש אולוואטו לשקיעה' },
                         { dayNum: 4, date: '2026-07-22', label: 'גלישה/צ׳יל + שוק Hatch בערב' },
-                        { dayNum: 5, date: '2026-07-23', label: 'יום אחרון באולוואטו' }
+                        { dayNum: 5, date: '2026-07-23', label: 'יום פנוי באולוואטו' }
                     ]
                 }
             ]
@@ -48,12 +48,12 @@ const tripData = {
             weeks: [
                 {
                     weekNum: 1,
-                    label: 'נוסה',
+                    label: 'נוסה למבונגן',
                     days: [
-                        { dayNum: 1, date: '2026-07-24', label: 'מעבר מאולוואטו + מעבורת לנוסה למבונגן' },
-                        { dayNum: 2, date: '2026-07-25', label: 'צלילות/שנורקל: Manta Point + Crystal Bay' },
-                        { dayNum: 3, date: '2026-07-26', label: 'מעבר לנוסה פנידה' },
-                        { dayNum: 4, date: '2026-07-27', label: 'פנידה: Kelingking + Diamond Beach' }
+                        { dayNum: 1, date: '2026-07-24', label: 'מעבורת לנוסה למבונגן (Su Casa)' },
+                        { dayNum: 2, date: '2026-07-25', label: 'יום צלילות: Manta Point + Crystal Bay (Sober)' },
+                        { dayNum: 3, date: '2026-07-26', label: 'טיול יום לנוסה פנידה עם קומאנג' },
+                        { dayNum: 4, date: '2026-07-27', label: 'צ׳נינגן: Yellow Bridge + Secret Beach + ARNA' }
                     ]
                 }
             ]
@@ -67,9 +67,41 @@ const tripData = {
                     weekNum: 1,
                     label: 'סידמן',
                     days: [
-                        { dayNum: 1, date: '2026-07-28', label: 'מעבר מנוסה לסידמן (Vishala)' },
+                        { dayNum: 1, date: '2026-07-28', label: 'טיסה חזרה לבאלי + נסיעה לסידמן (Vishala)' },
                         { dayNum: 2, date: '2026-07-29', label: 'טרסות אורז + מפל Gembleng באופנוע' },
                         { dayNum: 3, date: '2026-07-30', label: 'סדנת בישול (Padarama) + צ׳יל בבריכה' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'lombok',
+            name: 'קוטה לומבוק',
+            intro: 'עיירת הגלישה בדרום לומבוק — חופי ענק כמעט ריקים, גלים לכל רמה ואוכל מעולה.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'קוטה לומבוק',
+                    days: [
+                        { dayNum: 1, date: '2026-07-31', label: 'מעבר מסידמן לקוטה לומבוק' },
+                        { dayNum: 2, date: '2026-08-01', label: 'חופים: Selong Belanak / Tanjung Aan' },
+                        { dayNum: 3, date: '2026-08-02', label: 'גלישה/צ׳יל בקוטה לומבוק' },
+                        { dayNum: 4, date: '2026-08-03', label: 'יום חופשי בקוטה לומבוק' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'tetebatu',
+            name: 'תטבטו',
+            intro: 'כפר בלב האי מתחת לרינג׳אני — שדות אורז, כמעט בלי תיירים והכי אותנטי שיש.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'תטבטו',
+                    days: [
+                        { dayNum: 1, date: '2026-08-04', label: 'מעבר מקוטה לומבוק לתטבטו (באופנוע)' },
+                        { dayNum: 2, date: '2026-08-05', label: 'סיור עם מקומי — שדות אורז ונוף לרינג׳אני' }
                     ]
                 }
             ]
@@ -83,28 +115,9 @@ const tripData = {
                     weekNum: 1,
                     label: 'גילי אייר',
                     days: [
-                        { dayNum: 1, date: '2026-07-31', label: 'מעבורת מסידמן לגילי אייר (Villa Bagus)' },
-                        { dayNum: 2, date: '2026-08-01', label: 'שנורקל צבים (Biba Beach) + יוגה ב-H2O' },
-                        { dayNum: 3, date: '2026-08-02', label: 'יום חופשי באי' }
-                    ]
-                }
-            ]
-        },
-        {
-            id: 'lombok',
-            name: 'לומבוק',
-            intro: 'האי השכן הפראי — חופים ריקים, גלישה בקוטה לומבוק ומפלים בפנים האי.',
-            weeks: [
-                {
-                    weekNum: 1,
-                    label: 'לומבוק',
-                    days: [
-                        { dayNum: 1, date: '2026-08-03', label: 'מעבר מגילי אייר ללומבוק' },
-                        { dayNum: 2, date: '2026-08-04', label: 'חופים: Selong Belanak / Tanjung Aan' },
-                        { dayNum: 3, date: '2026-08-05', label: 'גלישה/צ׳יל בקוטה לומבוק' },
-                        { dayNum: 4, date: '2026-08-06', label: 'מפלים בפנים האי' },
-                        { dayNum: 5, date: '2026-08-07', label: 'יום חופשי' },
-                        { dayNum: 6, date: '2026-08-08', label: 'יום אחרון בלומבוק' }
+                        { dayNum: 1, date: '2026-08-06', label: 'מעבר מתטבטו לגילי אייר (Villa Bagus)' },
+                        { dayNum: 2, date: '2026-08-07', label: 'שנורקל צבים (Biba Beach) + יוגה ב-H2O' },
+                        { dayNum: 3, date: '2026-08-08', label: 'יום פנוי בגילי אייר' }
                     ]
                 }
             ]
@@ -118,7 +131,7 @@ const tripData = {
                     weekNum: 1,
                     label: 'מונדוק',
                     days: [
-                        { dayNum: 1, date: '2026-08-09', label: 'חזרה לבאלי + נסיעה למונדוק (Munduk Cabins)' },
+                        { dayNum: 1, date: '2026-08-09', label: 'מעבורת ל-Sanur + נסיעה למונדוק (Munduk Cabins)' },
                         { dayNum: 2, date: '2026-08-10', label: 'מקדש Ulun Danu + מפל Banyumala + Munduk Escape' }
                     ]
                 }
@@ -135,7 +148,7 @@ const tripData = {
                     days: [
                         { dayNum: 1, date: '2026-08-11', label: 'נסיעה לאובוד — Art Market + Ubud Palace' },
                         { dayNum: 2, date: '2026-08-12', label: 'Pyramids of Chi (sound healing) + Tropical' },
-                        { dayNum: 3, date: '2026-08-13', label: 'Kayon Jungle Resort + זריחה בבטור · טיסה הביתה למחרת' }
+                        { dayNum: 3, date: '2026-08-13', label: 'מעבר ל-Kayon Jungle Resort + Cretya' }
                     ]
                 }
             ]
@@ -147,6 +160,44 @@ const tripData = {
    homepage itinerary editor) falls back to the generic pages/country.html?id=
    template instead. */
 const HANDWRITTEN_PAGES = ['uluwatu', 'rajaampat', 'sideman', 'gili', 'nusa', 'munduk', 'ubud'];
+
+/* The town, in ENGLISH, appended to a Google-Maps search built from a
+   recommendation's place name (see linkifyPlaces() in js/recs-enhance.js).
+   It deliberately does not come from `name` above: those are Hebrew, and a
+   query like "Warung Local נוסה" is a Hebrew word inside an Indonesian map —
+   Google mostly returned nothing. Spelling follows what Maps knows, not the
+   Hebrew transliteration ('Sidemen', not 'Sideman'). For 'nusa' the anchor is
+   Lembongan (where we sleep, and where nearly every tip is); the handful of
+   Penida landmarks are famous enough to resolve anyway. */
+const DEST_MAP_AREA = {
+    uluwatu: 'Uluwatu, Bali',
+    nusa: 'Nusa Lembongan, Bali',
+    sideman: 'Sidemen, Bali',
+    lombok: 'Kuta Lombok',
+    tetebatu: 'Tetebatu, Lombok',
+    gili: 'Gili Air, Lombok',
+    munduk: 'Munduk, Bali',
+    ubud: 'Ubud, Bali',
+    rajaampat: 'Raja Ampat, Papua'
+};
+
+/* Ids not listed above fall back to the catalog's mapArea (candidates from
+   "יעדים נוספים"), then to the country — still far better than a Hebrew word. */
+function destSearchArea(id) {
+    if (DEST_MAP_AREA[id]) return DEST_MAP_AREA[id];
+    var cat = (typeof DESTINATION_CATALOG !== 'undefined' ? DESTINATION_CATALOG : [])
+        .filter(function (d) { return d.id === id; })[0];
+    return (cat && cat.mapArea) || 'Indonesia';
+}
+
+/* Which destination the current document is showing: the file name on a
+   hand-authored page, ?id= on the generic pages/country.html template.
+   '' on the homepage and the other root pages. */
+function currentCountryId() {
+    const m = /\/pages\/([a-z0-9-]+)\.html$/i.exec(location.pathname);
+    if (m && HANDWRITTEN_PAGES.indexOf(m[1]) !== -1) return m[1];
+    return new URLSearchParams(location.search || '').get('id') || '';
+}
 
 /* '' when the current document is served from /pages/, 'pages/' at the root.
    Every generated link must go through this — see the "Relative paths & the
@@ -283,12 +334,7 @@ function renderDestNav() {
     if (!nav || !tripData.countries) return;
     const homeLink = nav.querySelector('a[href="index.html"], a[href="../index.html"]');
     const pagesPrefix = sitePagesPrefix();
-    const currentId = (function () {
-        const m = /\/pages\/([a-z0-9-]+)\.html$/i.exec(location.pathname);
-        if (m && HANDWRITTEN_PAGES.indexOf(m[1]) !== -1) return m[1];
-        const params = new URLSearchParams(location.search || '');
-        return params.get('id') || '';
-    })();
+    const currentId = currentCountryId();
 
     /* Also clears the static <li class="nav-dest"> markup the pages ship with. */
     nav.querySelectorAll('li.nav-dest').forEach(function (li) { li.remove(); });

@@ -4,13 +4,14 @@ Static Hebrew (RTL) trip-planning PWA for Guy & Adi's honeymoon (19 Jul–14 Aug
 2026, Bali region). No build step — plain HTML/CSS/JS served as-is.
 Deployed at Netlify, source at `github.com/Guymaoz96/trip-planner`.
 
-**Current itinerary (changed mid-trip, 25 Jul 2026 — Raja Ampat dropped,
-Lombok added):** Uluwatu 19–24.7 (5 nights) → Nusa 24–28.7 (4) → Sideman
-28–31.7 (3) → Gili Air 31.7–3.8 (3) → Lombok 3–9.8 (6) → Munduk 9–11.8 (2) →
-Ubud 11–14.8 (3), home 14.8. 26 nights / 27 days. The runtime source of truth
-is the itinerary override in Firestore `tripConfig/main` (edited via the
-homepage editor); `js/main.js` defaults were synced to this plan on 25.7 —
-if they diverge again, trust Firestore, then re-sync main.js.
+**Current itinerary (last changed 29 Jul 2026 — Lombok split into Kuta Lombok
++ Tetebatu):** Uluwatu 19–24.7 (5 nights) → Nusa 24–28.7 (4) → Sideman
+28–31.7 (3) → Kuta Lombok 31.7–4.8 (4) → Tetebatu 4–6.8 (2) → Gili Air
+6–9.8 (3) → Munduk 9–11.8 (2) → Ubud 11–14.8 (3), home 14.8.
+26 nights / 27 days. The runtime source of truth is the itinerary override in
+Firestore `tripConfig/main` (edited via the homepage editor); `js/main.js`
+defaults were synced to this plan on 29.7 — if they diverge again, trust
+Firestore, then re-sync main.js.
 `pages/rajaampat.html` is orphaned (kept, harmless, not in tripData).
 
 **All user-facing text is Hebrew RTL.** Keep it that way — don't translate
@@ -69,10 +70,24 @@ Instead:
    bug hit the map twice already (pin numbers/dates were static strings,
    and new destinations had no pin at all).
 4. `js/destination-catalog.js` holds full data (map position, color,
-   description, recommendations) for the 4 "יעדים נוספים" candidates
-   (Amed, Lombok, Secret Gilis, Flores) — shared by the add-destination
-   picker, the map, and `pages/country.html`. A destination typed in fresh
-   (not from this catalog) gets no map pin and no recs — nothing to look up.
+   `mapArea`, description, recommendations) for destinations with no
+   hand-written page: the "יעדים נוספים" candidates (Amed, Secret Gilis,
+   Flores) plus the stops added later (Kuta Lombok, Tetebatu) — shared by the
+   add-destination picker, the map, and `pages/country.html`. A destination
+   typed in fresh (not from this catalog) gets no map pin and no recs —
+   nothing to look up.
+
+   **Editing `tripData` in main.js is not enough to change the live plan.**
+   Every browser loads its saved override over the defaults, and the editor UI
+   cannot *rename* a destination at all. Anything beyond add/reorder/resize has
+   to go through the one-shot `MIGRATIONS` list at the top of
+   `itinerary-editor.js`: each entry mutates the already-loaded
+   `tripData.countries` (rebuilding a stop from `DEFAULT_COUNTRIES`, the
+   pre-override snapshot of main.js), and the ids that already ran are stored
+   in the override itself (`migrations: []`, localStorage + Firestore) so it
+   applies once per trip, on every device, and never resurrects something
+   deleted on purpose later. Migrations that touch text the user may have
+   edited should match on the known-stale string first.
 5. `pages/country.html?id=<id>` is a **generic template** for any
    destination not in `HANDWRITTEN_PAGES` (main.js) — i.e. anything added
    via the editor that isn't one of the 7 original hand-authored pages
@@ -129,7 +144,13 @@ shared modules rather than in 8 copies of markup:
 
 - `js/recs-enhance.js` upgrades the hand-authored `.recs-section` in place —
   category chips, source chips, live search, and Google-Maps links on bold
-  place names. It derives everything from the existing classes
+  place names. The map search appends the destination **in English**
+  (`DEST_MAP_AREA` / `destSearchArea()` in main.js, or `mapArea` in the
+  catalog), never the Hebrew `name`: "Warung X נוסה" is a Hebrew word inside
+  an Indonesian map and Google found nothing. **A new destination that will
+  carry recommendations needs an entry there**, spelled the way Maps knows it
+  ('Sidemen', not the Hebrew transliteration). It derives everything else
+  from the existing classes
   (`.recs-card.is-{food,info,stay}`, `.rec-source--<who>`), so **new
   recommendation cards need those classes or they land in the default
   "attractions" bucket and can't be filtered.** Filtering hides individual
@@ -179,9 +200,10 @@ only path — it must degrade gracefully to local-only.
 ### Attribution system
 
 Recommendation cards (`.recs-card`) carry a `.rec-source` badge
-(`--neta` / `--roni` CSS variants) naming which friends' trip story a tip
-came from. If a third source is ever added, it needs a new CSS variant in
-`css/style.css` — don't reuse an existing color for a different source.
+(`--neta` teal / `--roni` purple / `--shir` amber CSS variants) naming which
+friends' trip story a tip came from. A new source needs its own CSS variant in
+`css/style.css` — in both places, the badge *and* the `.recs-chip--src` filter
+chip — and don't reuse an existing color for a different source.
 
 ## Known-stale docs
 

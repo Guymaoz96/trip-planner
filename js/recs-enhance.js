@@ -36,7 +36,11 @@
         return /[A-Za-z]{3}/.test(t);
     }
 
-    function linkifyPlaces(section, destName) {
+    /* `area` is the destination in ENGLISH (destSearchArea() in js/main.js).
+       It used to be the Hebrew page title, which made every search a mix of a
+       Latin place name and a Hebrew town — Google Maps found nothing for most
+       of them. */
+    function linkifyPlaces(section, area) {
         section.querySelectorAll('.recs-card li b').forEach(function (b) {
             if (b.closest('a')) return;
             if (b.dataset.mapLinked) return;
@@ -46,7 +50,7 @@
             var a = document.createElement('a');
             a.className = 'rec-map-link';
             a.href = 'https://www.google.com/maps/search/?api=1&query=' +
-                encodeURIComponent(name + (destName ? ' ' + destName : ''));
+                encodeURIComponent(name + (area ? ' ' + area : ''));
             a.target = '_blank';
             a.rel = 'noopener noreferrer';
             a.title = 'פתיחה ב-Google Maps: ' + name;
@@ -212,9 +216,10 @@
         if (!cards.length) return;
         section.dataset.enhanced = '1';
 
-        var heroTitle = document.querySelector('.country-hero__title');
-        var destName = heroTitle ? heroTitle.textContent.replace(/[^֐-׿\s]/g, '').trim() : '';
-        linkifyPlaces(section, destName);
+        var area = typeof destSearchArea === 'function'
+            ? destSearchArea(typeof currentCountryId === 'function' ? currentCountryId() : '')
+            : '';
+        linkifyPlaces(section, area);
 
         /* One card and a handful of tips doesn't need a filter bar. */
         var tipCount = grid.querySelectorAll('.recs-card li').length;
