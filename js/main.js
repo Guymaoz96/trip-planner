@@ -67,7 +67,7 @@ const tripData = {
                     weekNum: 1,
                     label: 'סידמן',
                     days: [
-                        { dayNum: 1, date: '2026-07-28', label: 'טיסה חזרה לבאלי + נסיעה לסידמן (Vishala)' },
+                        { dayNum: 1, date: '2026-07-28', label: 'מעבורת מנוסה ל-Sanur + נסיעה לסידמן (Vishala)' },
                         { dayNum: 2, date: '2026-07-29', label: 'טרסות אורז + מפל Gembleng באופנוע' },
                         { dayNum: 3, date: '2026-07-30', label: 'סדנת בישול (Padarama) + צ׳יל בבריכה' }
                     ]
@@ -147,8 +147,7 @@ const tripData = {
                     label: 'אובוד',
                     days: [
                         { dayNum: 1, date: '2026-08-11', label: 'נסיעה לאובוד — Art Market + Ubud Palace' },
-                        { dayNum: 2, date: '2026-08-12', label: 'Pyramids of Chi (sound healing) + Tropical' },
-                        { dayNum: 3, date: '2026-08-13', label: 'מעבר ל-Kayon Jungle Resort + Cretya' }
+                        { dayNum: 2, date: '2026-08-12', label: 'Pyramids of Chi (sound healing) + Tropical' }
                     ]
                 }
             ]
@@ -320,6 +319,34 @@ function checkoutDate(lastNightIso) {
     return isoAddDays(lastNightIso, 1);
 }
 
+/* The flight home leaves on the NIGHT of the last day in Indonesia and lands
+   the morning after, so that final night is spent in the air — not at a
+   destination. `days` only models nights we sleep somewhere, so the tail of the
+   trip is derived rather than stored: the departure day is the last check-out
+   date (13.8), and we land TRIP_AIR_NIGHTS night(s) later (14.8). Deriving it
+   means resizing the last stop moves the flight with it. */
+const TRIP_AIR_NIGHTS = 1;
+
+function lastTripNight() {
+    const countries = tripData.countries || [];
+    const last = countries[countries.length - 1];
+    if (!last || !last.weeks.length) return '';
+    const days = last.weeks[last.weeks.length - 1].days;
+    return (days && days.length) ? days[days.length - 1].date : '';
+}
+
+/* Last day in Indonesia: check-out morning, and the night we fly out. */
+function tripDepartureDate() {
+    const night = lastTripNight();
+    return night ? checkoutDate(night) : '';
+}
+
+/* The morning we get home. */
+function tripLandingDate() {
+    const dep = tripDepartureDate();
+    return dep ? isoAddDays(dep, TRIP_AIR_NIGHTS) : '';
+}
+
 /* Renders just the destination <li class="nav-dest"> slice of #navMenu from
    tripData.countries, leaving the fixed items (home/tips/todo/etc) untouched.
 
@@ -403,13 +430,13 @@ function renderTripSummary() {
     const datesEl = document.querySelector('.hero-dates');
     if (datesEl) {
         const firstDay = countries[0] && countries[0].weeks[0] && countries[0].weeks[0].days[0];
-        const lastCountry = countries[countries.length - 1];
-        const lastWeek = lastCountry && lastCountry.weeks[lastCountry.weeks.length - 1];
-        const lastDay = lastWeek && lastWeek.days[lastWeek.days.length - 1];
-        if (firstDay && lastDay && firstDay.date && lastDay.date) {
-            const endDate = new Date(lastDay.date + 'T12:00:00');
-            endDate.setDate(endDate.getDate() + 1);
-            datesEl.textContent = formatDate(firstDay.date) + ' – ' + endDate.toLocaleDateString('he-IL', { day: 'numeric', month: 'short', year: 'numeric' }) + ' · ' + (totalNights + 1) + ' ימים';
+        const landing = tripLandingDate();
+        /* The span runs to the LANDING date, but the day count is days spent in
+           Indonesia (nights + the check-out day) — the last night is the flight,
+           so "ימי טיול" and the date range deliberately differ by one. */
+        if (firstDay && firstDay.date && landing) {
+            datesEl.textContent = formatDate(firstDay.date) + ' – ' + formatDate(landing) +
+                ' · ' + (totalNights + 1) + ' ימי טיול';
         }
     }
 

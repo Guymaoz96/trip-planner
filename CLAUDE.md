@@ -4,15 +4,31 @@ Static Hebrew (RTL) trip-planning PWA for Guy & Adi's honeymoon (19 Jul–14 Aug
 2026, Bali region). No build step — plain HTML/CSS/JS served as-is.
 Deployed at Netlify, source at `github.com/Guymaoz96/trip-planner`.
 
-**Current itinerary (last changed 29 Jul 2026 — Lombok split into Kuta Lombok
-+ Tetebatu):** Uluwatu 19–24.7 (5 nights) → Nusa 24–28.7 (4) → Sideman
-28–31.7 (3) → Kuta Lombok 31.7–4.8 (4) → Tetebatu 4–6.8 (2) → Gili Air
-6–9.8 (3) → Munduk 9–11.8 (2) → Ubud 11–14.8 (3), home 14.8.
-26 nights / 27 days. The runtime source of truth is the itinerary override in
-Firestore `tripConfig/main` (edited via the homepage editor); `js/main.js`
-defaults were synced to this plan on 29.7 — if they diverge again, trust
-Firestore, then re-sync main.js.
+**Current itinerary (last changed 30 Jul 2026 — flight home moved to the night
+of 13.8):** Uluwatu 19–24.7 (5 nights) → Nusa 24–28.7 (4) → Sideman 28–31.7
+(3) → Kuta Lombok 31.7–4.8 (4) → Tetebatu 4–6.8 (2) → Gili Air 6–8.8 (2) →
+Munduk 8–11.8 (3) → Ubud 11–13.8 (2). **25 nights in Indonesia / 26 trip
+days.** The runtime source of truth is the itinerary override in Firestore
+`tripConfig/main` (edited via the homepage editor); `js/main.js` defaults were
+synced to this plan on 30.7 — if they diverge again, trust Firestore, then
+re-sync main.js. The Gili 3→2 / Munduk 2→3 swap was made by the user in the
+live app, not in main.js — expect that and don't "correct" it.
 `pages/rajaampat.html` is orphaned (kept, harmless, not in tripData).
+
+### The tail of the trip is not a night
+
+The flight home leaves on the **night of 13.8** and lands on the **14th**, so
+that last night is spent in the air, not at a destination. `days` only models
+nights we sleep somewhere, so the tail is *derived* in `js/main.js`:
+`tripDepartureDate()` (= the final `checkoutDate()`, the last day in Indonesia)
+and `tripLandingDate()` (= departure + `TRIP_AIR_NIGHTS`). Resizing the last
+stop therefore moves the flight with it. Consequences: `TRIP_TOTAL_NIGHTS` in
+`itinerary-editor.js` is **25, not 26**; the hero line reads "26 ימי טיול" over
+a 19.7–14.8 span (they differ by one on purpose — the last night is the
+flight); and the calendar grid runs one day past check-out, ending with a
+`depart` cell then a `land` cell (`dayCell()`'s `tail` argument).
+**There is no day card for the departure day** — the day rail only renders
+nights, so 13.8 has nowhere to hold a timeline.
 
 **All user-facing text is Hebrew RTL.** Keep it that way — don't translate
 UI copy to English even when writing code/comments in English.
