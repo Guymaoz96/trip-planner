@@ -85,7 +85,10 @@
         return (a === b ? a : a + ' – ' + b) + years;
     }
 
-    function dayCell(iso, info, isEnd, today) {
+    /* `tail` marks the two cells past the last night: 'depart' is the check-out
+       day, spent in Indonesia until the night flight, and 'land' is the morning
+       we get home. Both are derived in js/main.js, not stored as days. */
+    function dayCell(iso, info, tail, today) {
         var d = parseIso(iso);
         var dowLong = DOW_LONG[d.getDay()];
         /* The grid runs continuously across months, so the 1st spells its
@@ -96,14 +99,18 @@
         var isToday = iso === today;
         var dateCls = 'sched-day__date' + (d.getDate() === 1 ? ' sched-day__date--month' : '');
 
-        if (isEnd || !info) {
-            /* !info can only happen if the itinerary has a date gap, which
-               recomputeDates() prevents — render it as a neutral open day. */
+        if (tail || !info) {
+            /* !info with no tail can only happen if the itinerary has a date
+               gap, which recomputeDates() prevents — render a neutral day. */
+            var name = 'יום פנוי';
+            var endTag = '';
+            if (tail === 'depart') { name = 'טיסה הביתה ✈️'; endTag = 'צ׳ק-אאוט · טיסת לילה'; }
+            else if (tail === 'land') { name = 'נחיתה בארץ 🛬'; endTag = 'סוף הטיול'; }
             return '<div class="sched-day sched-day--end' + (isToday ? ' is-today' : '') + '">' +
                 '<span class="sched-day__dow">' + dowLong + '</span>' +
                 '<span class="' + dateCls + '">' + dateTxt + '</span>' +
-                '<span class="sched-day__name">' + (isEnd ? 'חזרה הביתה ✈️' : 'יום פנוי') + '</span>' +
-                (isEnd ? '<span class="sched-day__tag">צ׳ק-אאוט</span>' : '') +
+                '<span class="sched-day__name">' + name + '</span>' +
+                (endTag ? '<span class="sched-day__tag">' + endTag + '</span>' : '') +
                 '</div>';
         }
 
@@ -150,10 +157,13 @@
         var index = buildIndex();
         if (!index.first) { host.innerHTML = ''; return; }
 
-        var endIso = checkoutDate(index.lastNight); // check-out morning, last cell
+        /* The grid runs one day past check-out: the last night is the flight
+           home, so the trip ends on the landing date, not at check-out. */
+        var departIso = tripDepartureDate() || checkoutDate(index.lastNight);
+        var landIso = tripLandingDate();
         var today = todayIso();
         var cursor = parseIso(index.first);
-        var end = parseIso(endIso);
+        var end = parseIso(landIso || departIso);
 
         /* One continuous grid for the whole trip — the weeks run straight from
            July into August with no month break; the month is called out on the
@@ -168,7 +178,11 @@
         var trail = 0;
         while (cursor <= end) {
             var iso = isoOf(cursor);
-            html += dayCell(iso, index.byDate[iso], iso === endIso && !index.byDate[iso], today);
+            var info = index.byDate[iso];
+            var tail = '';
+            if (!info && iso === departIso) tail = 'depart';
+            else if (!info && iso === landIso) tail = 'land';
+            html += dayCell(iso, info, tail, today);
             trail = 6 - cursor.getDay();
             cursor.setDate(cursor.getDate() + 1);
         }

@@ -2,7 +2,10 @@
     'use strict';
 
     var TRIP_START = '2026-07-19';
-    var TRIP_TOTAL_NIGHTS = 26;
+    /* 25 nights in Indonesia, not 26: the flight home leaves on the night of
+       13.8 and lands on the 14th, so the last night is spent in the air —
+       see TRIP_AIR_NIGHTS in js/main.js. */
+    var TRIP_TOTAL_NIGHTS = 25;
     var LS_KEY = 'itinerary_override';
     var editModeOn = false;
 
@@ -212,6 +215,24 @@
                 var firstGiliDay = g === -1 ? null : (countries[g].weeks[0] || {}).days;
                 if (firstGiliDay && firstGiliDay[0] && /Padangbai/i.test(firstGiliDay[0].label || '')) {
                     firstGiliDay[0].label = 'מעבר מתטבטו לגילי אייר (Villa Bagus)';
+                }
+            }
+        },
+        {
+            /* The flight home turned out to leave on the night of 13.8 and land
+               on the 14th, so that night is in the air rather than in Ubud:
+               3 nights → 2, and the trip's last night is 12→13.8. Also clears a
+               Sideman label left over from the Raja Ampat era, when that day
+               really was a flight back to Bali. */
+            id: '2026-07-fly-home-13-aug',
+            apply: function (countries) {
+                var u = indexOfId(countries, 'ubud');
+                if (u !== -1 && countryNights(countries[u]) === 3) setCountryNights(countries[u], 2);
+
+                var s = indexOfId(countries, 'sideman');
+                var sideDays = s === -1 ? null : (countries[s].weeks[0] || {}).days;
+                if (sideDays && sideDays[0] && /טיסה חזרה לבאלי/.test(sideDays[0].label || '')) {
+                    sideDays[0].label = 'מעבורת מנוסה ל-Sanur + נסיעה לסידמן (Vishala)';
                 }
             }
         }
