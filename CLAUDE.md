@@ -11,9 +11,16 @@ Munduk 8–11.8 (3) → Ubud 11–13.8 (2). **25 nights in Indonesia / 26 trip
 days.** The runtime source of truth is the itinerary override in Firestore
 `tripConfig/main` (edited via the homepage editor); `js/main.js` defaults were
 synced to this plan on 30.7 — if they diverge again, trust Firestore, then
-re-sync main.js. The Gili 3→2 / Munduk 2→3 swap was made by the user in the
+re-sync main.js. The Gili/Munduk night changes were made by the user in the
 live app, not in main.js — expect that and don't "correct" it.
-`pages/rajaampat.html` is orphaned (kept, harmless, not in tripData).
+
+**Gili Air, Amed and Raja Ampat are currently in the removed archive**, not the
+plan (see below) — `pages/gili.html` and `pages/rajaampat.html` are still live
+pages reached from "יעדים נוספים", not orphans. Their archived copies were
+reconstructed from the main.js defaults, since the app deleted removals
+outright before the archive existed; day *numbers* match what their saved
+content is keyed to, but the dates and night counts may not be what the user
+last had.
 
 ### The tail of the trip is not a night
 
@@ -92,6 +99,20 @@ Instead:
    add-destination picker, the map, and `pages/country.html`. A destination
    typed in fresh (not from this catalog) gets no map pin and no recs —
    nothing to look up.
+
+   **Removing a destination is a move, not a delete.** It goes to the archive
+   (`removed: []` in the same override doc, alongside `countries` and
+   `migrations`) keeping its `weeks/days`, because every timeline, photo, file
+   and diary doc is keyed `<id>_w<week>_d<day>` — dropping the days orphans all
+   of it. `pages/more-destinations.html` renders the archive under
+   "יעדים שהוסרו מהמסלול" with a link to the destination's own page and a
+   restore button (`window.restoreDestination(id)`), and the add-destination
+   picker offers archived stops by id so restoring reunites them with their
+   saved content. **Anything resolving an id must use `findCountryById()`
+   (js/main.js), not `tripData.countries.find()`** — the latter is what made a
+   removed destination's page render "היעד לא נמצא" with its content stranded.
+   `isArchivedDestination()` drives the "not in the plan" notice that
+   `initCountryPage()` adds to the hero on every destination page.
 
    **Editing `tripData` in main.js is not enough to change the live plan.**
    Every browser loads its saved override over the defaults, and the editor UI

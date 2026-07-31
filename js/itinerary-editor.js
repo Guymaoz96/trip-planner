@@ -8,6 +8,10 @@
     var TRIP_TOTAL_NIGHTS = 25;
     var LS_KEY = 'itinerary_override';
     var editModeOn = false;
+    /* Destinations taken out of the itinerary, kept whole (days included) so
+       nothing saved against them is orphaned — see the archive note in
+       js/main.js. Persisted with the itinerary as `removed`. */
+    var archived = [];
 
     /* Ideas already written up on pages/more-destinations.html — full data
        (incl. map position + recommendations) lives in js/destination-catalog.js,
@@ -93,7 +97,8 @@
         try {
             localStorage.setItem(LS_KEY, JSON.stringify({
                 countries: tripData.countries,
-                migrations: appliedMigrations
+                migrations: appliedMigrations,
+                removed: archived
             }));
         } catch (e) {}
     }
@@ -105,10 +110,18 @@
                 db.collection('tripConfig').doc('main').set({
                     countries: tripData.countries,
                     migrations: appliedMigrations,
+                    removed: archived,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }).catch(function (e) { console.warn('itinerary save', e); });
             } catch (e) {}
         }
+    }
+
+    /* The archive is read by pages/more-destinations.html and by
+       findCountryById() in js/main.js, so republish it on every load/mutation
+       rather than handing out a stale copy. */
+    function publishArchive() {
+        window.REMOVED_DESTINATIONS = archived;
     }
 
     function loadOverrideFromLocalStorage() {
@@ -119,6 +132,8 @@
             if (data && Array.isArray(data.countries) && data.countries.length) {
                 tripData.countries = data.countries;
                 if (Array.isArray(data.migrations)) appliedMigrations = data.migrations.slice();
+                if (Array.isArray(data.removed)) archived = data.removed.slice();
+                publishArchive();
                 return true;
             }
         } catch (e) {}
@@ -132,6 +147,8 @@
                 if (doc.exists && doc.data() && Array.isArray(doc.data().countries) && doc.data().countries.length) {
                     tripData.countries = doc.data().countries;
                     appliedMigrations = Array.isArray(doc.data().migrations) ? doc.data().migrations.slice() : [];
+                    archived = Array.isArray(doc.data().removed) ? doc.data().removed.slice() : [];
+                    publishArchive();
                     /* applyMigrations() saves (cloud included) when it changes
                        something, so only mirror to localStorage otherwise. */
                     if (!applyMigrations(true)) persistLocal();
@@ -188,6 +205,56 @@
        re-applies (which would resurrect something deleted on purpose later).
        A browser with no override at all skips all of this: it is already
        reading the corrected defaults. */
+    /* Raja Ampat and Amed were dropped from the plan before removals were
+       archived, so their pages had no route back into the app and the day docs
+       saved under them (rajaampat_w1_d1, amed_w1_d1/d2) were unreachable.
+       Raja Ampat's structure is the one it had in js/main.js before it was
+       dropped — recovering it keeps its hand-written page's day rail working.
+       Amed's two nights match how it was added, from the catalog. */
+    var SEED_ARCHIVE = [
+        {
+            id: 'rajaampat',
+            name: 'ראג׳ה אמפט',
+            intro: 'גן עדן צלילה ושנורקל מרוחק — נופים בתוליים ומים צלולים. רוסטי ומזומן בלבד.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'מעבר + מיסול',
+                    days: [
+                        { dayNum: 1, date: '', label: 'טיסה לסורונג (עם קונקשן) + לינת מעבר' },
+                        { dayNum: 2, date: '', label: 'מעבורת/סירה למיסול — Yapap home stay' },
+                        { dayNum: 3, date: '', label: 'מיסול: שנורקל + נקודות תצפית' },
+                        { dayNum: 4, date: '', label: 'מיסול: לגונות וטיולי סירה' }
+                    ]
+                },
+                {
+                    weekNum: 2,
+                    label: 'מנסואר',
+                    days: [
+                        { dayNum: 5, date: '', label: 'מעבר למנסואר — Terimikhasi home stay' },
+                        { dayNum: 6, date: '', label: 'מנסואר: שנורקל + צבים בצד השני' },
+                        { dayNum: 7, date: '', label: 'מנסואר: צלילה/צ׳יל' }
+                    ]
+                }
+            ]
+        },
+        {
+            id: 'amed',
+            name: 'עמד',
+            intro: 'עיירה קטנה ומרגיעה, מושלמת לשנורקלינג וצלילה, עם נוף מושלם של הר הגעש אגונג.',
+            weeks: [
+                {
+                    weekNum: 1,
+                    label: 'עמד',
+                    days: [
+                        { dayNum: 1, date: '', label: 'יום פנוי בעמד' },
+                        { dayNum: 2, date: '', label: 'יום פנוי בעמד' }
+                    ]
+                }
+            ]
+        }
+    ];
+
     var MIGRATIONS = [
         {
             /* "לומבוק" was really two stops: Kuta in the south, then the
@@ -234,6 +301,26 @@
                 if (sideDays && sideDays[0] && /טיסה חזרה לבאלי/.test(sideDays[0].label || '')) {
                     sideDays[0].label = 'מעבורת מנוסה ל-Sanur + נסיעה לסידמן (Vishala)';
                 }
+            }
+        },
+        {
+            /* Backfill the archive for destinations dropped before it existed —
+               until now removing one deleted it outright, stranding its saved
+               days. Anything js/main.js still knows about that is missing from
+               the plan was removed that way, so it can be reconstructed from
+               the defaults; SEED_ARCHIVE covers the two that were dropped from
+               the defaults themselves and have no other record.
+               Reconstructed days may not match what the destination looked like
+               when it was removed — that copy is gone — but the day numbers
+               line up, which is what the saved content is keyed to. */
+            id: '2026-07-archive-removed-destinations',
+            apply: function (countries) {
+                DEFAULT_COUNTRIES.concat(SEED_ARCHIVE).forEach(function (entry) {
+                    if (archived.some(function (c) { return c.id === entry.id; })) return;
+                    if (countries.some(function (c) { return c.id === entry.id; })) return;
+                    archived.push(JSON.parse(JSON.stringify(entry)));
+                });
+                publishArchive();
             }
         }
     ];
@@ -289,23 +376,71 @@
         notifyChange();
     }
 
+    /* Removing is a MOVE, not a delete: the whole destination (days and all)
+       goes to the archive, so it keeps its own page and everything saved
+       against its days, and shows up under "יעדים נוספים" ready to be put
+       back. Re-archiving the same id replaces the older copy. */
+    function archiveCountry(country) {
+        archived = archived.filter(function (c) { return c.id !== country.id; });
+        var copy = JSON.parse(JSON.stringify(country));
+        copy.removedAt = toIsoDate(new Date());
+        archived.push(copy);
+        publishArchive();
+    }
+
     function removeCountry(idx) {
         var country = tripData.countries[idx];
         if (!country) return;
-        if (!confirm('להסיר את "' + country.name + '" מהמסלול? המידע שנשמר לימים שלו (תמונות/קבצים/ציר זמן) יישאר בענן ולא יימחק — אפשר לשחזר בהוספה חוזרת של אותו יעד.')) return;
+        if (!confirm('להסיר את "' + country.name + '" מהמסלול?\n\nהיעד יעבור לעמוד "יעדים נוספים" — הימים, ציר הזמן, התמונות, הקבצים והיומן שלו יישמרו ויישארו נגישים, ואפשר להחזיר אותו למסלול משם בכל רגע.')) return;
+        archiveCountry(country);
         tripData.countries.splice(idx, 1);
         recomputeDates();
         saveOverride();
         notifyChange();
     }
 
+    /* Puts an archived destination back at the end of the itinerary with the
+       days it had, so its saved content lines up again. */
+    function restoreCountry(id) {
+        var entry = archived.filter(function (c) { return c.id === id; })[0];
+        if (!entry) return false;
+        if ((tripData.countries || []).some(function (c) { return c.id === id; })) return false;
+        var country = JSON.parse(JSON.stringify(entry));
+        delete country.removedAt;
+        if (!country.weeks || !country.weeks.length) {
+            country.weeks = [{ weekNum: 1, label: '', days: [] }];
+            setCountryNights(country, 2);
+        }
+        tripData.countries.push(country);
+        archived = archived.filter(function (c) { return c.id !== id; });
+        publishArchive();
+        recomputeDates();
+        saveOverride();
+        notifyChange();
+        return true;
+    }
+
+    /* Rebuilt on every tripdatachange, not once: the archive changes as
+       destinations are removed and restored, and a stale list would offer a
+       destination that is already back in the plan. */
     function renderAddOptions() {
         var select = document.getElementById('addDestSelect');
-        if (!select || select.options.length) return; // build once
-        var opts = CANDIDATE_DESTINATIONS.map(function (c) {
+        if (!select) return;
+        var keep = select.value;
+        var opts = CANDIDATE_DESTINATIONS.filter(function (c) {
+            return !archived.some(function (a) { return a.id === c.id; });
+        }).map(function (c) {
             return '<option value="' + esc(c.id) + '">' + esc(c.name) + '</option>';
         }).join('');
+        /* Archived ones are offered by id so restoring reunites a destination
+           with the days its saved content is keyed to. */
+        if (archived.length) {
+            opts += '<optgroup label="יעדים שהוסרו מהמסלול">' + archived.map(function (c) {
+                return '<option value="' + esc(c.id) + '">' + esc(c.name) + ' (שמור)</option>';
+            }).join('') + '</optgroup>';
+        }
         select.innerHTML = opts + '<option value="__custom__">יעד חדש...</option>';
+        if (keep) select.value = keep;
     }
 
     function onAddDestChange() {
@@ -321,12 +456,24 @@
             customInput.focus();
             if (preview) preview.hidden = true;
         } else {
+            var restorable = archived.filter(function (c) { return c.id === select.value; })[0];
             var candidate = CANDIDATE_DESTINATIONS.filter(function (c) { return c.id === select.value; })[0];
-            if (candidate && nightsInput) nightsInput.value = candidate.defaultNights;
-            if (candidate && preview) {
-                document.getElementById('addDestPreviewTitle').textContent = candidate.title;
-                document.getElementById('addDestPreviewLead').textContent = candidate.lead;
-                preview.hidden = false;
+            if (restorable) {
+                /* A restore brings its own nights back — the input doesn't apply. */
+                if (nightsInput) nightsInput.value = countryNights(restorable) || 2;
+                if (preview) {
+                    document.getElementById('addDestPreviewTitle').textContent = restorable.name + ' — יעד שמור';
+                    document.getElementById('addDestPreviewLead').textContent =
+                        'היעד יוחזר למסלול עם הימים שהיו לו, וכל מה שנשמר עליו (ציר זמן, תמונות, קבצים, יומן) יחזור להיות מקושר.';
+                    preview.hidden = false;
+                }
+            } else if (candidate) {
+                if (nightsInput) nightsInput.value = candidate.defaultNights;
+                if (preview) {
+                    document.getElementById('addDestPreviewTitle').textContent = candidate.title;
+                    document.getElementById('addDestPreviewLead').textContent = candidate.lead;
+                    preview.hidden = false;
+                }
             }
         }
     }
@@ -337,6 +484,13 @@
         var nightsInput = document.getElementById('addDestNights');
         if (!select) return;
         var isCustom = select.value === '__custom__';
+        /* An archived pick is a restore — it brings back the destination's own
+           days, so its saved timelines/photos/diary line up again. */
+        if (!isCustom && restoreCountry(select.value)) {
+            select.selectedIndex = 0;
+            onAddDestChange();
+            return;
+        }
         var candidate = isCustom ? null : CANDIDATE_DESTINATIONS.filter(function (c) { return c.id === select.value; })[0];
         var name = isCustom ? (customInput.value || '').trim() : (candidate || {}).name;
         if (!name) { alert('נא להזין שם ליעד.'); return; }
@@ -475,8 +629,15 @@
         if (typeof renderDestNav === 'function') renderDestNav();
         if (typeof renderCountryCards === 'function') renderCountryCards();
         if (typeof renderTripSummary === 'function') renderTripSummary();
+        renderAddOptions();
         renderTotal();
     });
+
+    /* Used by pages/more-destinations.html to list removed destinations and to
+       put one back. Restoring goes through here rather than through the page so
+       the save/notify path stays in one place. */
+    publishArchive();
+    window.restoreDestination = restoreCountry;
 
     /* Cloud itinerary must be live on EVERY page, not just the homepage —
        initItineraryEditor() returns early without #countryCards, so subscribing

@@ -211,12 +211,37 @@ function countryHref(id, pagesPrefix) {
     return pagesPrefix + file;
 }
 
+/* Taking a destination out of the itinerary does NOT delete it: it moves to
+   the archive kept by js/itinerary-editor.js (shown on
+   pages/more-destinations.html), keeping its days — and therefore every
+   timeline, photo, file and diary entry saved against them, which are all keyed
+   by `<id>_w<week>_d<day>`. So anything that resolves an id must look in the
+   archive too; searching only tripData.countries is what left a removed
+   destination's page rendering "היעד לא נמצא" with all of its content
+   stranded behind it. */
+function archivedDestinations() {
+    return (typeof window !== 'undefined' && window.REMOVED_DESTINATIONS) || [];
+}
+
+function findCountryById(id) {
+    const live = (tripData.countries || []).find(c => c.id === id);
+    if (live) return live;
+    return archivedDestinations().find(c => c.id === id) || null;
+}
+
+/* True for a destination that exists only in the archive — the pages use it to
+   explain why the day rail shows dates that are no longer in the plan. */
+function isArchivedDestination(id) {
+    return !(tripData.countries || []).some(c => c.id === id) &&
+        archivedDestinations().some(c => c.id === id);
+}
+
 function getDayDocId(countryId, weekNum, dayNum) {
     return countryId + '_w' + weekNum + '_d' + dayNum;
 }
 
 function getDayFromParams(countryId, weekNum, dayNum) {
-    const country = tripData.countries.find(c => c.id === countryId);
+    const country = findCountryById(countryId);
     if (!country) return null;
     const week = country.weeks.find(w => w.weekNum === parseInt(weekNum, 10));
     if (!week) return null;

@@ -433,7 +433,12 @@
     function renderRail(countryId) {
         var mount = document.getElementById('countryRailMount');
         if (!mount || !tripData || !tripData.countries) return;
-        var country = tripData.countries.find(function(c) { return c.id === countryId; });
+        /* Archive-aware: a destination removed from the itinerary keeps its
+           days so its saved timelines/photos/diary stay reachable — see
+           findCountryById() in js/main.js. */
+        var country = typeof findCountryById === 'function'
+            ? findCountryById(countryId)
+            : tripData.countries.find(function(c) { return c.id === countryId; });
         if (!country) return;
 
         var cubeIndex = 0;
@@ -482,8 +487,42 @@
         );
     }
 
+    /* Every destination page runs through here, so the "not in the plan" note
+       lives here rather than in 8 copies of markup. Re-run safe: the note is
+       removed first, so restoring a destination clears it on the next render. */
+    function renderArchivedNotice(countryId) {
+        var hero = document.querySelector('.country-hero');
+        if (!hero) return;
+        var old = hero.querySelector('.archived-notice');
+        if (old) old.remove();
+        if (typeof isArchivedDestination !== 'function' || !isArchivedDestination(countryId)) return;
+        var notice = document.createElement('p');
+        notice.className = 'archived-notice';
+        notice.innerHTML = '📦 היעד הזה כרגע <b>לא במסלול</b> — כל מה ששמרתם עליו נשמר וממתין. ' +
+            '<a href="more-destinations.html">אפשר להחזיר אותו למסלול מעמוד "יעדים נוספים"</a>.';
+        hero.appendChild(notice);
+    }
+
+    /* The rail is built from tripData, so it has to follow the itinerary like
+       every other destination surface (see CLAUDE.md). It matters most for a
+       removed destination: on a browser with no saved copy yet, the archive
+       only lands with the first cloud snapshot, so its days show up here rather
+       than at first paint. */
+    document.addEventListener('tripdatachange', function () {
+        if (!currentCountryId || !document.getElementById('countryRailMount')) return;
+        renderArchivedNotice(currentCountryId);
+        renderRail(currentCountryId);
+        var openDoc = window.TIMELINE_DOC_ID;
+        if (!openDoc) return;
+        var cube = [].find.call(document.querySelectorAll('.day-cube'), function (b) {
+            return b.getAttribute('data-doc-id') === openDoc;
+        });
+        if (cube) cube.classList.add('is-open');
+    });
+
     function initCountryPage(countryId) {
         currentCountryId = countryId;
+        renderArchivedNotice(countryId);
         if (!document.getElementById('countryRailMount')) {
             var legacy = document.getElementById('countryDaysMount');
             if (legacy) {
