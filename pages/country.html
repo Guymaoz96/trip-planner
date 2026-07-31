@@ -101,7 +101,10 @@
             if (typeof initMobileMenu === 'function') initMobileMenu();
 
             var id = new URLSearchParams(location.search).get('id') || '';
-            var country = (tripData.countries || []).find(function (c) { return c.id === id; });
+            /* Archive-aware: a destination removed from the itinerary still has
+               a page, so its saved timeline/photos/files/diary stay reachable
+               from "יעדים נוספים" — see findCountryById() in js/main.js. */
+            var country = findCountryById(id);
 
             if (!country) {
                 document.getElementById('countryTitle').textContent = 'היעד לא נמצא';

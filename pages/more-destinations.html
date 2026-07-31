@@ -40,6 +40,15 @@
         <h1 class="page-title">🧭 יעדים נוספים</h1>
         <p class="section-intro">רעיונות ליעדים שעדיין <b>לא נמצאים במסלול הרשמי</b> שלכם, מתוך סיפורי הדרך של חברים שכבר טיילו באינדונזיה — מי המליץ על מה מופיע בתגית שעל כל טיפ. אפשר להוסיף כל אחד מהיעדים ישירות מעמוד הבית (מצב עריכה ✏️ ליד "המסלול שלנו"), או לבקש ממני יעד חדש שעדיין אין עליו טיפים.</p>
 
+        <!-- Destinations removed from the itinerary. Rendered from the archive
+             kept in the itinerary override (js/itinerary-editor.js) so nothing
+             saved against them is lost or hidden. -->
+        <section id="removedSection" hidden>
+            <h2 class="removed-section__title">📦 יעדים שהוסרו מהמסלול</h2>
+            <p class="section-intro">היעדים האלה היו במסלול והוצאו ממנו — <b>שום דבר לא נמחק</b>. ציר הזמן, התמונות, הקבצים והיומן שנשמרו לימים שלהם עדיין שם, ואפשר להחזיר אותם למסלול בלחיצה.</p>
+            <div id="removedList"></div>
+        </section>
+
         <div class="dest-block" data-candidate-id="amed">
             <div class="dest-block__header">
                 <h2>🐚 Amed — צפון באלי</h2>
@@ -205,19 +214,66 @@
     <script src="../js/itinerary-editor.js"></script>
     <script src="../js/ai-chat.js"></script>
     <script>
-        /* A candidate that's already been added to the real itinerary shouldn't
-           also show up as an unscheduled "idea" — hide its block instead. */
+        function esc(s) {
+            var d = document.createElement('div');
+            d.textContent = s == null ? '' : s;
+            return d.innerHTML;
+        }
+
+        /* A candidate already in the real itinerary shouldn't also show up as an
+           unscheduled "idea". Nor should one sitting in the removed archive —
+           it gets a richer card below, with a link to everything saved on it. */
         function hideScheduledCandidates() {
             var scheduledIds = (tripData.countries || []).map(function (c) { return c.id; });
+            var archivedIds = (window.REMOVED_DESTINATIONS || []).map(function (c) { return c.id; });
             document.querySelectorAll('.dest-block[data-candidate-id]').forEach(function (block) {
-                block.hidden = scheduledIds.indexOf(block.getAttribute('data-candidate-id')) !== -1;
+                var id = block.getAttribute('data-candidate-id');
+                block.hidden = scheduledIds.indexOf(id) !== -1 || archivedIds.indexOf(id) !== -1;
             });
         }
+
+        function nightsOf(country) {
+            return (country.weeks || []).reduce(function (s, w) { return s + (w.days || []).length; }, 0);
+        }
+
+        function renderRemoved() {
+            var section = document.getElementById('removedSection');
+            var list = document.getElementById('removedList');
+            if (!section || !list) return;
+            var items = window.REMOVED_DESTINATIONS || [];
+            section.hidden = !items.length;
+            list.innerHTML = items.map(function (c) {
+                var nights = nightsOf(c);
+                var meta = nights ? nights + ' לילות שמורים' : 'ללא ימים שמורים';
+                if (c.removedAt) meta += ' · הוסר ב-' + formatDate(c.removedAt);
+                return '<div class="dest-block dest-block--removed">' +
+                    '<div class="dest-block__header"><h2>' + esc(c.name) + '</h2></div>' +
+                    (c.intro ? '<p class="dest-block__lead">' + esc(c.intro) + '</p>' : '') +
+                    '<p class="removed-card__meta">' + esc(meta) + '</p>' +
+                    '<div class="removed-card__actions">' +
+                    '<a class="removed-card__open" href="' + esc(countryHref(c.id, sitePagesPrefix())) + '">פתחו את עמוד היעד ←</a>' +
+                    '<button type="button" class="removed-card__restore" data-restore-id="' + esc(c.id) + '">↩ החזירו למסלול</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        function refresh() {
+            hideScheduledCandidates();
+            renderRemoved();
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof initMobileMenu === 'function') initMobileMenu();
-            hideScheduledCandidates();
+            refresh();
+            document.getElementById('removedList').addEventListener('click', function (e) {
+                var btn = e.target.closest('[data-restore-id]');
+                if (!btn) return;
+                var id = btn.getAttribute('data-restore-id');
+                if (!confirm('להחזיר את היעד למסלול? הוא יתווסף בסוף המסלול עם הימים שהיו לו — אפשר להזיז ולשנות מספר לילות מעמוד הבית.')) return;
+                if (typeof window.restoreDestination === 'function' && window.restoreDestination(id)) refresh();
+            });
         });
-        document.addEventListener('tripdatachange', hideScheduledCandidates);
+        document.addEventListener('tripdatachange', refresh);
     </script>
 </body>
 </html>
